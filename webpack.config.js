@@ -15,7 +15,7 @@ const CONFIG = {
 
   base: {
     entry: {
-      app: ['babel-polyfill', PATHS.main]
+      'gapi-redux': ['babel-polyfill', PATHS.main]
     },
     cache: true,
     plugins : [ new HtmlWebpackPlugin ({ title : 'Temp' }) ]
@@ -67,7 +67,7 @@ const CONFIG = {
       hot: true,
       inline: true,
       stats: 'errors-only',
-      port: 3333
+      port: 4444
     },
     plugins: [
       new webpack.HotModuleReplacementPlugin({ multiStep: true })

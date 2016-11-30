@@ -2,14 +2,11 @@ export const GET_RESOURCE          = 'GET_RESOURCE';
 export const GET_RESOURCE_FAIL     = 'GET_RESOURCE_FAIL';
 
 export const LIST_RESOURCE         = 'LIST_RESOURCE';
-export const LIST_RESOURCE_PAGED   = 'LIST_RESOURCE_PAGED';
-export const LIST_RESOURCE_FAIL    = 'LIST_RESOURCE_FAIL';
+export const ALL_RESOURCE          = 'ALL_RESOURCE';
 
 export const WRITE_PAGINATION      = 'WRITE_PAGINATION';
 export const WRITE_STUB            = 'WRITE_STUB';
 export const WRITE_RESOURCE        = 'WRITE_RESOURCE';
-
-export const CHANGE_PAGE           = 'CHANGE_PAGE';
 
 export const CREATE_RESOURCE = 'CREATE_RESOURCE';
 export const CREATE_RESOURCE_SUCCESS = 'CREATE_RESOURCE_SUCCESS';
