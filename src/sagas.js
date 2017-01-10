@@ -4,17 +4,34 @@ import {normalize, arrayOf} from 'normalizr';
 import Gapi from './gapi-client';
 import {schemas} from './schemas';
 
-import {GET_RESOURCE, LIST_RESOURCE, UPDATE_RESOURCE, CREATE_RESOURCE} from './actionTypes';
+import {
+  GET_RESOURCE, LIST_RESOURCE, ALL_RESOURCE,
+  UPDATE_RESOURCE, CREATE_RESOURCE,
+  DELETE_RESOURCE
+} from './actionTypes';
 
 import {
   getResource, getResourceFail,
-  writePagination, writeStub, writeResource
+  listResourceFail,
+  writePagination, writeStub, writeResource, changePage,
+  clearPagination
 } from './actions';
 
-import {selectItem} from './selectors';
+import {selectItem, selectPagination} from './selectors';
 
 // TODO: Error Handling
 // TODO: For loops
+
+function _hasNext(res) {
+  let hasNext = false;
+  res.links.map( link => {
+    try{
+      if( link.rel === 'next' )
+        hasNext = true;
+    } catch (err){}
+  });
+  return hasNext;
+}
 
 function *_requestItem(resource, id) {
   /**
@@ -34,7 +51,7 @@ function *_requestItem(resource, id) {
                       .catch( error => ({error}) );
 }
 
-function *_requestPage(resource, page, query={}, pageSize=20) {
+export function *_requestPage(resource, page, query={}, pageSize=20) {
   const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
 
   const promise = new Promise( (resolve, reject) => {
@@ -98,27 +115,36 @@ function *_writeSubStubs(parentResource, entities){
   }
 }
 
-function *_getSubResources(entities, related){
-    for (const resource of Object.keys(related)) {
-      if (entities.hasOwnProperty(resource)) {
-        for (const id of Object.keys(entities[resource])) {
-          yield put(getResource(resource, id, related[resource]))
-        }
+function *_getSubResources(schema, entities, related){
+  for (const resource of Object.keys(related)) {
+    let resourceName = null;
+
+    if ( entities.hasOwnProperty(resource) ){
+      resourceName = resource;
+    } else if( schema.hasOwnProperty(resource) && entities.hasOwnProperty(schema[resource]._key) ) {
+      resourceName = schema[resource]._key
+    }
+
+    if (resourceName) {
+      for (const id of Object.keys(entities[resourceName])) {
+        yield put(getResource(resourceName, id, related[resource]))
       }
     }
+  }
 }
 
-function *_writeResponse(response, action){
+function *_writeResponse(response, resource, id, getRelated={}){
   /**
    * Write the resource sub resource's response to the store
    * Also, if other resources listed in `getRelated` make a request for those
    */
-  const normalized = normalize(response.body, schemas[action.resource]);
-  yield put(writeResource(action.resource, action.id, normalized.entities[action.resource][action.id]));
-  yield *_writeSubStubs(action.resource, normalized.entities);
+  const normalized = normalize(response, schemas[resource]);
+  yield put(writeResource(resource, id, normalized.entities[resource][id]));
+  yield *_writeSubStubs(resource, normalized.entities);
 
-  if (action.getRelated)
-    yield *_getSubResources(normalized.entities, action.getRelated, )
+  if (getRelated) {
+    yield *_getSubResources(schemas[resource], normalized.entities, getRelated)
+  }
 }
 
 export function* _getResource(action) {
@@ -130,7 +156,7 @@ export function* _getResource(action) {
 
   if( ! action.force) {
     const item = yield select(selectItem, action.resource, action.id);
-    if( item && ! item.stub)
+    if( item && item.hasOwnProperty('stub') && !item.stub)
       return;
   }
 
@@ -141,7 +167,7 @@ export function* _getResource(action) {
     return;
   }
 
-  yield _writeResponse(response, action);
+  yield _writeResponse(response.body, action.resource, action.id, action.getRelated);
 }
 
 
@@ -151,11 +177,19 @@ export function* _listResource(action){
    * In a second attempt, will try to request the actual resource one by one.
    * each `_write...` process makes sure the data isn't already available in the store
   **/
+
+  // // Don't make a request if page is already loaded
+  // const pagination = yield select(selectPagination, action.resource, action.paginationKey);
+  // if( pagination && pagination.pages.hasOwnProperty(action.page) ) {
+  //   yield put(changePage(action.resource, action.paginationKey, action.page))
+  //   return
+  // }
+
   const response = yield *_requestPage(action.resource, action.page, action.query, action.pageSize);
 
   if ( response.error ) {
     // TODO: This is for a single Fail
-    yield put(getResourceFail(action.resource, action.id, response.error));
+    yield put(listResourceFail(action.resource, action.paginationKey, action.id, response.error));
     return;
   }
 
@@ -163,16 +197,51 @@ export function* _listResource(action){
   const normalized = normalize(response.body.results, arrayOf(schemas[action.resource]));
   const keys = normalized.result.length ? Object.keys(normalized.entities[action.resource]) : [];
 
-  yield put(writePagination(action.resource, keys, response.body.count, response.body.current_page, response.body.max_per_page))
+  yield put(writePagination(action.resource, action.paginationKey, keys, response.body.count, response.body.current_page, response.body.max_per_page, action.query));
   yield* _writeStubs(action.resource, response.body);
   yield* _writeResources(action.resource, response.body, action.getRelated);
+}
+
+export function* _allResource(action){
+  /**
+   * Will gather items from all pages of a resource.
+   * Good for base/core resources like countries, states, or places
+   * e.g Drop downs in forms need access to all items in a resource and not just one page
+   * Not the best for large resource
+   *
+   * Looks pretty much like _listResource except for the loop and the fact that
+   * it will not write pagination to the store.
+  **/
+  const pageSize = 50;
+  let page = 1;
+
+  // while a "next page" exists
+  while(true){
+    const response = yield *_requestPage(action.resource, page, {}, pageSize);
+
+    if ( response.error ) {
+      // TODO: This is for a single Fail
+      yield put(listResourceFail(action.resource, action.paginationKey, action.id, response.error));
+      break;
+    }
+
+    // TODO: use normalized data instead
+    // const normalized = normalize(response.body.results, arrayOf(schemas[action.resource]));
+    yield* _writeStubs(action.resource, response.body);
+    yield* _writeResources(action.resource, response.body, action.getRelated);
+
+    if ( _hasNext(response.body ))
+      page++;
+    else
+      break;
+  }
 }
 
 export function *_createResource(action) {
   const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
 
   const promise = new Promise( (resolve, reject) => {
-    gapi.country_dossiers
+    gapi[action.resource]
         .post()
         .send(action.data)
         .end( (err, res) => {
@@ -189,14 +258,16 @@ export function *_createResource(action) {
     yield put(getResourceFail(action.resource, action.id, response.error));
     return;
   }
-  yield *_writeResponse(response, action);
+
+  yield *_writeResponse(response, action.resource, response.id);
+  yield put(clearPagination(action.resource));
 }
 
 export function *_updateResource(action) {
   const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
 
   const promise = new Promise( (resolve, reject) => {
-    gapi.country_dossiers
+    gapi[action.resource]
         .patch(action.id)
         .send(action.data)
         .end( (err, res) => {
@@ -213,14 +284,38 @@ export function *_updateResource(action) {
     yield put(getResourceFail(action.resource, action.id, response.error));
     return;
   }
-  yield *_writeResponse(response, action);
+
+  yield *_writeResponse(response.body, action.resource, action.id);
+}
+
+export function *_deleteResource(action) {
+  const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
+
+  const promise = new Promise( (resolve, reject) => {
+    gapi[action.resource]
+        .del(action.id)
+        .end( (err, res) => {
+          err
+            ? reject(err)
+            : resolve(res);
+        });
+  });
+
+  const response = yield promise.then( response => ({body: response.body, error: null}) )
+                                .catch( error => ({error: error}) );
+
+  if ( response.error ) {
+    yield put(getResourceFail(action.resource, action.id, response.error));
+  }
 }
 
 export default function* () {
   yield [
     takeEvery( GET_RESOURCE,    _getResource ),
     takeEvery( LIST_RESOURCE,   _listResource ),
+    takeEvery( ALL_RESOURCE,    _allResource ),
     takeEvery( UPDATE_RESOURCE, _updateResource ),
-    takeEvery( CREATE_RESOURCE, _createResource )
+    takeEvery( CREATE_RESOURCE, _createResource ),
+    takeEvery( DELETE_RESOURCE, _deleteResource )
   ]
 }
