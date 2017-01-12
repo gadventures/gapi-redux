@@ -8,6 +8,7 @@ export const LIST_RESOURCE_FAIL    = 'gapi/LIST_FAIL';
 export const WRITE_PAGINATION      = 'gapi/WRITE_PAGINATION';
 export const WRITE_STUB            = 'gapi/WRITE_STUB';
 export const WRITE_RESOURCE        = 'gapi/WRITE_RESOURCE';
+export const CHANGE_PAGE           = 'gapi/CHANGE_PAGE';
 
 export const CLEAR_PAGINATION      = 'gapi/CLEAR_PAGINATION';
 

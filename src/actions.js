@@ -9,6 +9,7 @@ import {
   WRITE_PAGINATION,
   WRITE_STUB,
   WRITE_RESOURCE,
+  CHANGE_PAGE,
 
   CLEAR_PAGINATION,
 
@@ -17,6 +18,7 @@ import {
   UPDATE_RESOURCE_SUCCESS,
 
   CREATE_RESOURCE,
+  CREATE_RESOURCE_FAIL,
 
   DELETE_RESOURCE
 
@@ -41,27 +43,39 @@ export const listResourceFail = (resource, paginationKey, id, error) => (
   {type: LIST_RESOURCE_FAIL, resource, paginationKey, id, error}
 );
 
-export const writePagination = (resource, paginationKey, ids, count, page, pageSize) => (
-  {type: WRITE_PAGINATION, resource, paginationKey, ids, count, page, pageSize}
+export const writePagination = (resource, paginationKey, ids, count, page, pageSize, responseCode) => (
+  {type: WRITE_PAGINATION, resource, paginationKey, ids, count, page, pageSize, responseCode}
 );
 export const writeStub = (resource, id, response) => (
   {type: WRITE_STUB, resource, id, response}
-);
-export const writeResource = (resource, id, response) => (
-  {type: WRITE_RESOURCE, resource, id, response}
 );
 export const clearPagination = (resource, paginationKey) => (
   {type: CLEAR_PAGINATION, resource, paginationKey}
 );
 
-export const updateResource = (resource, id, data={}) => (
-  {type: UPDATE_RESOURCE, resource, id, data}
+export const changePage = (resource, paginationKey, page) => (
+  {type: CHANGE_PAGE, resource, paginationKey, page}
 );
 
-export const createResource = (resource, data={}) => (
-  {type: CREATE_RESOURCE, resource, data}
+export const updateResource = (resource, id, data={}, resolve, reject) => (
+  {type: UPDATE_RESOURCE, resource, id, data, resolve, reject}
+);
+export const updateResourceFail = (resource, id, error) => (
+  {type: UPDATE_RESOURCE_FAIL, resource, id, error}
+);
+
+// TODO: Get rid of tempId requirement. this is stupid.
+export const createResource = (resource, data={}, resolve, reject) => (
+  {type: CREATE_RESOURCE, resource, data, resolve, reject}
+);
+export const createResourceFail = (resource, tempId, error) => (
+  {type: CREATE_RESOURCE_FAIL, resource, tempId, error}
 );
 
 export const deleteResource = (resource, id) => (
   {type: DELETE_RESOURCE, resource, id}
+);
+
+export const writeResource = (resource, id, response, requestType, responseCode) => (
+  {type: WRITE_RESOURCE, resource, id, response, requestType, responseCode}
 );

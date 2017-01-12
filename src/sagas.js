@@ -13,6 +13,7 @@ import {
 import {
   getResource, getResourceFail,
   listResourceFail,
+  updateResourceFail, createResourceFail,
   writePagination, writeStub, writeResource, changePage,
   clearPagination
 } from './actions';
@@ -21,6 +22,15 @@ import {selectItem, selectPagination} from './selectors';
 
 // TODO: Error Handling
 // TODO: For loops
+
+let tempId = 0;
+export function getTempId(){
+  /**
+   * Only used when dispatching CREATE_RESOURCE
+   * Can be random, don't see a reason why this would be a problem **/
+  // TODO: not liking the whole idea of requiring an id when dispatching create.
+  return `_t${++tempId}`;
+}
 
 function _hasNext(res) {
   let hasNext = false;
@@ -47,8 +57,8 @@ function *_requestItem(resource, id) {
           : resolve(res);
       });
   });
-  return yield promise.then( response => ({body: response.body, error: null}) )
-                      .catch( error => ({error}) );
+  return yield promise.then( response => response )
+                      .catch( error   => ({error: error.response}) );
 }
 
 export function *_requestPage(resource, page, query={}, pageSize=20) {
@@ -66,8 +76,8 @@ export function *_requestPage(resource, page, query={}, pageSize=20) {
       });
   });
 
-  return yield promise.then( response => ({body: response.body, error: null}) )
-                                .catch( error => ({error: error}) );
+  return yield promise.then( response => ( response ) )
+                      .catch( error   => ({error: error.response}) );
 }
 
 export function *_writeStubs(resource, response) {
@@ -115,44 +125,38 @@ function *_writeSubStubs(parentResource, entities){
   }
 }
 
-function *_getSubResources(schema, entities, related){
-  for (const resource of Object.keys(related)) {
-    let resourceName = null;
-
-    if ( entities.hasOwnProperty(resource) ){
-      resourceName = resource;
-    } else if( schema.hasOwnProperty(resource) && entities.hasOwnProperty(schema[resource]._key) ) {
-      resourceName = schema[resource]._key
-    }
-
-    if (resourceName) {
-      for (const id of Object.keys(entities[resourceName])) {
-        yield put(getResource(resourceName, id, related[resource]))
+function *_getSubResources(entities, related){
+    for (const resource of Object.keys(related)) {
+      if (entities.hasOwnProperty(resource)) {
+        for (const id of Object.keys(entities[resource])) {
+          yield put(getResource(resource, id, related[resource]))
+        }
       }
     }
-  }
 }
 
-function *_writeResponse(response, resource, id, getRelated={}){
+function *_writeResponse(response, resource, id, getRelated={}, requestType, responseCode){
   /**
    * Write the resource sub resource's response to the store
    * Also, if other resources listed in `getRelated` make a request for those
    */
   const normalized = normalize(response, schemas[resource]);
-  yield put(writeResource(resource, id, normalized.entities[resource][id]));
+  yield put(writeResource(resource, id, normalized.entities[resource][id], requestType, responseCode));
   yield *_writeSubStubs(resource, normalized.entities);
 
-  if (getRelated) {
-    yield *_getSubResources(schemas[resource], normalized.entities, getRelated)
-  }
+  if (getRelated)
+    yield *_getSubResources(normalized.entities, getRelated)
 }
+
+//////////////////////////////////////////////
+////////////// Action Handelers //////////////
+//////////////////////////////////////////////
 
 export function* _getResource(action) {
   /**
    * As long as a sub-resource is marked by the schema, it'll be writen to the store as
    * a stub. To retrieve the actual child resource the resource names must be passed in `action.getRelated`
    */
-
 
   if( ! action.force) {
     const item = yield select(selectItem, action.resource, action.id);
@@ -166,10 +170,8 @@ export function* _getResource(action) {
     yield put(getResourceFail(action.resource, action.id, response.error));
     return;
   }
-
-  yield _writeResponse(response.body, action.resource, action.id, action.getRelated);
+  yield _writeResponse(response.body, action.resource, action.id, action.getRelated, 'get', response.status);
 }
-
 
 export function* _listResource(action){
   /**
@@ -197,7 +199,7 @@ export function* _listResource(action){
   const normalized = normalize(response.body.results, arrayOf(schemas[action.resource]));
   const keys = normalized.result.length ? Object.keys(normalized.entities[action.resource]) : [];
 
-  yield put(writePagination(action.resource, action.paginationKey, keys, response.body.count, response.body.current_page, response.body.max_per_page, action.query));
+  yield put(writePagination(action.resource, action.paginationKey, keys, response.body.count, response.body.current_page, response.body.max_per_page, response.statusCode));
   yield* _writeStubs(action.resource, response.body);
   yield* _writeResources(action.resource, response.body, action.getRelated);
 }
@@ -251,15 +253,17 @@ export function *_createResource(action) {
         });
   });
 
-  const response = yield promise.then( response => ({body: response.body, error: null}) )
-                                .catch( error => ({error: error}) );
+  const response = yield promise.then( response => response )
+                                .catch( error => ({error: error.response}) );
 
   if ( response.error ) {
-    yield put(getResourceFail(action.resource, action.id, response.error));
+    action.reject ? yield action.reject(response.error) : null;
+    yield put(createResourceFail(action.resource, response.error));
     return;
   }
 
-  yield *_writeResponse(response, action.resource, response.id);
+  action.resolve ? yield action.resolve(response.status): null;
+  yield *_writeResponse(response, action.resource, response.id, {}, 'post', response.status);
   yield put(clearPagination(action.resource));
 }
 
@@ -277,15 +281,17 @@ export function *_updateResource(action) {
         });
   });
 
-  const response = yield promise.then( response => ({body: response.body, error: null}) )
-                                .catch( error => ({error: error}) );
+  const response = yield promise.then( response => response )
+                                .catch( error   => ({error: error.response}) );
 
   if ( response.error ) {
-    yield put(getResourceFail(action.resource, action.id, response.error));
+    action.reject ? yield action.reject(response.error) : null;
+    yield put(updateResourceFail(action.resource, action.id, response.error));
     return;
   }
 
-  yield *_writeResponse(response.body, action.resource, action.id);
+  action.resolve ? yield action.resolve(response.status): null;
+  yield *_writeResponse(response.body, action.resource, action.id, {}, 'patch', response.status);
 }
 
 export function *_deleteResource(action) {

@@ -1,4 +1,4 @@
-import {Schema, unionOf, arrayOf} from 'normalizr';
+import {Schema, unionOf} from 'normalizr';
 
 
 const place          = new Schema('places'),
@@ -11,18 +11,15 @@ const place          = new Schema('places'),
       activityDossier      = new Schema('activity_dossiers'),
       transportDossier     = new Schema('transport_dossiers'),
 
-      feature = new Schema('features'),
-      dossierFeature = new Schema('dossier_features'),
-      dossierSegment = new Schema('dossier_segment');
+      feature = new Schema('features');
+
 
 countryDossier.define({
-  country: country,
-  segment: dossierSegment
+  country: country
 });
 
 placeDossier.define({
-  place: place,
-  segment: dossierSegment
+  place: place
 });
 
 place.define({
@@ -30,29 +27,6 @@ place.define({
   feature: feature
 });
 
-dossierFeature.define({
-  parent: dossierFeature
-});
-
-dossierSegment.define({
-  parent: dossierSegment
-});
-
-activityDossier.define({
-  features: arrayOf(dossierFeature),
-  segment: dossierSegment,
-  start_location: place
-});
-
-accommodationDossier.define({
-  features: arrayOf(dossierFeature),
-  segment: dossierSegment
-});
-
-transportDossier.define({
-  features: arrayOf(dossierFeature),
-  segment: dossierSegment
-});
 
 const dossierMembers = {
   accommodation_dossiers: accommodationDossier,
@@ -61,7 +35,7 @@ const dossierMembers = {
 };
 
 dossier.define({
-  /** `unionOf` used for polymorphic objects.
+  /** union of used for polymorphic objects.
    *  https://github.com/paularmstrong/normalizr#unionofschemamap-options
   **/
   dossier: unionOf(dossierMembers, {schemaAttribute: 'type'})
@@ -77,7 +51,5 @@ export const schemas = {
   accommodation_dossiers: accommodationDossier,
   activity_dossiers: activityDossier,
   transport_dossiers: transportDossier,
-  features: feature,
-  dossier_features: dossierFeature,
-  dossier_segments: dossierSegment
+  features: feature
 };
