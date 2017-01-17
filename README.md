@@ -15,10 +15,10 @@ Requirements
 Why
 ---
 You made a redux app that connects to Gapi and now you have all sorts of actions like `REQUEST_PLACE_DOSSIER` and `REQUEST_ITINERARY` and the list keeps growing as you move forward.
-You're also worried about resources that you've already requested, are you fetching them again? Need some more actions to request the child resources? 
+You're also worried about resources that you've already requested, are you fetching them again? Do you need more actions to request the child resources? 
  
 It would've been easier if you had an action creator that just did `getResource('place_dossiers', 123)`.
-And it would have been smart enough to handle your pagination and all the duplicate requests each component in your project is making and knew how to drill down to make separate requests for the children, right?
+And it would've been smart enough to handle your pagination and all the duplicate requests different components in your project make, and knew how to drill down to make separate requests for the children, right?
 
 Well if that's you, you've come to the right place. Keep on reading.
 
@@ -31,7 +31,6 @@ Documentation
     * [`allResource()`](#allresource)
     * [`createResource()`](#createresource)
     * [`updateResource()`](#updateresource)
-    * [`deleteResource()`](#deleteresource)
     * [Data Availability](#data-availability)    
 * [Selectors](#selectors)
     * [`selectItem`]()
@@ -94,6 +93,9 @@ And your're all set. Any gapi-redux actions you dispatch will now be caught by t
 
 Actions
 -------
+Actions will help load data into your store. [`Selectors`](#selectors) will allow you to read the loaded data. 
+
+No matter how many times or through what action a resource is requested, gapi-redux will only request that resource once. All other requests will be ignored
 
 #### `getResource(resourceName, resourceId [, getRelated={} [, force=false]])`
 Will attempt to retrieve a single resource from gapi.  
@@ -103,68 +105,103 @@ Will attempt to retrieve a single resource from gapi.
 store.dispatch(getResource('places', 123)) // get place w/ id 123
 
 // Will also make a request for the related country to this resource
-store.dispatch(getResource('places', 123, {countries: null }))
+store.dispatch(getResource('places', 123, {country: null }))
 
 // After requesting the place associated with each place dossier,
 // will then attempt to make a request for each country associated with each place
-store.dispatch(getResource('place_dossiers', 123, {places: {countries: null }}))  
+store.dispatch(getResource('place_dossiers', 123, {place: {country: null }}))  
 ```
 * `resourceName`
-The name of the resource to request
+**Required** The name of the resource to request
 
 * `resourceId`
-The id of the resource to request
+**Required** The id of the resource to request
 
 * `getRelated`
-After successfully fetching the current resource, request related sub-resources present in the current resource.
+By default when requesting a resource, any child resources present will be marked as stubs. `getRelated` is used to make deep requests for those child stubs.
+The `getRelated` object can include multiple keys. `getResource` will attempt to request all the given resources after the main resource has been retrieved.
+The value of each key can either be `null` or another object containing more resource keys.
+
+```javascript
+// Make additional requests for the related `primary_country` and `location` 
+// Also, requests the `country` of the returned `location`
+store.dispatch(getResource('accommodation_dossiers', 123, {primary_country: null, location: {country: null}}))
+```
 
 * `force`
-By default gapi-redux will will deny requesting a resource that has already been loaded in to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
+By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
 
 
-#### `listResource(resourceName, paginationKey [, page=1 [, query={} [, getRelated={} [, pageSize=20]]]])`
+#### `listResource(resource, paginationKey [, page=1 [, query={} [, getRelated={} [, pageSize=20]]]])`
 
 Will retrieve one page of the resource and save it in the store under the given paginationKey.
-
-[Why is `paginationKey` is required](#paginationkey)
 
 ```javascript
 // Request the first page
 store.dispatch(listResource('countries', 'myCountries')) 
 
-store.dispatch(listResource('places', 'listOfPlaces'), 1, {}, {countries: null})
+// After retrieving the list of places, will request each place's related country and save it in the store. 
+store.dispatch(listResource('places', 'listOfPlaces'), 1, {}, {country: null})
 ```
 
+* `resource`
+**Required** The name of the resource to request
+
+* `paginationKey` 
+**Required** On resource should be allowed to have multiple paginations. Lets say you have a form field component with search and filtering capabilities. One form might decide to use that component for more than one of it's fields. The search results (pagination) for each component, shouldn't affect the results in the other filed component. More importantly, neither should affect the list view page for that resource.
+Passing a `paginationKey` will allow the same resource to have multiple paginations.
+
+* `page`
+Page number to request
+
+* `query`
+Any query to pass to Gapi
+
+* `getRelated`
+Request related resources for each item in the list after the retrieving the main resource 
 
 
-Internal Action
----------------
-### getResourceFail
+#### allResource(resource, query={}, getRelated={}, getStubs=true)
 
-### listResourceFail
+Request every item in a resource. `allResource` will make separate calls to each page of a resource. Depending on the resource, this can sometimes take long time to complete. Use with caution.  
 
+* `resource`
+The name of the resource
+
+* `query`
+Any query to pass to Gapi
+
+* `getRelated`
+Request related resources for each item in the list after the retrieving the main resource
+
+* `getStubs`
+In most cases when using `allResource`, collecting only the stubs would suffice. Passing `false` can help speedup the request process. This value is `true` by default.
+
+#### `createResource(resource, [data={}, [resolve, [reject]]])`
+
+#### `updateResource(resource, id, [data={}, [resolve, [reject]]])`
 
 Data Availability
 -----------------
 
-When dispatching `getResource()`, `listResource()`, and `allResource()` the actual resource and it's children will be added to the store through multiple requests. And in each request part of the data will be written to the store
+When dispatching `getResource()`, `listResource()`, and `allResource()` the actual resource and it's children will be added to the store through multiple requests. In each request, part of the data will be written to the store
 
-This allows ....
+This allows for gradually displaying results, to the user, as they load. While the user is presented with the base data, related resources will be slowly loaded into the page.
  
-`getResource()`
+#### `getResource()`
    1. Request the actual resource
    2. Any child resources marked by schemas will be moved to their own resource branch in the store
    3. If `getRelated` made a request for that child resource, a separate `getResource()` call is made for the child.
         4. Repeat step 1 for child resources.
 
-`listResource()`
+#### `listResource()`
    1. Make a request for the list endpoint of a resource. The returned result will hold pagination information along the a list of stubs.
    2. Write the pagination information
    3. Write the list of stubs to the store in one go.
    4. Dispatch `getResource()` for each stub in the list.
    5. Go through all steps of `getResource()` for each stub.
 
-`allResource()`
+#### `allResource()`
    1. Make a request for the first page of a resource. The page size is set to 50.
    2. Write stubs to the store in one go.
    3. Dispatch `getRelated()` for each stub in the list.

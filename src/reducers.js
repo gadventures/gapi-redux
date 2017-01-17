@@ -55,17 +55,14 @@ const resourceReducer = function( oldState={}, action ){
   switch( action.type ) {
 
     case GET_RESOURCE:
-      state = addResourceToState(state, action.resource, action.id);
+      state = addResourceToState(state, action.resource);
       return {
         ...state,
         [action.resource]: {           // e.g. state.resources.countries
           ...state[action.resource],
           [action.id]: {               // e.g. state.resources.countries.CA
             ...state[action.resource][action.id],
-            _request: {
-              ...state[action.resource][action.id]._request,
-              get: {pending: true, responseCode: null}
-            }
+            fetching: true
           }
         }
       };
@@ -78,10 +75,7 @@ const resourceReducer = function( oldState={}, action ){
           ...state[action.resource],
           [action.id]: {               // e.g. state.resources.countries.CA
             ...state[action.resource][action.id],
-            _request: {
-              ...state[action.resource][action.id]._request,
-              get: {pending: false, responseCode: action.error.statusCode, responseMessage: action.error.statusText}
-            }
+            fetching: false
           }
         }
       };
@@ -94,7 +88,8 @@ const resourceReducer = function( oldState={}, action ){
           ...state[action.resource],
           [action.id]: {               // e.g. state.resources.countries.CA
             ...action.response,
-            stub: true
+            stub: true,
+            fetching: false
           }
         }
       };
@@ -108,10 +103,7 @@ const resourceReducer = function( oldState={}, action ){
           [action.id]: {               // e.g. state.resources.countries.data.CA
             ...action.response,
             stub: false,
-            _request: {
-              ...state[action.resource][action.id]._request,
-              [action.requestType]: { pending: false, responseCode: action.responseCode,}
-            }
+            fetching: false
           }
         }
       };
@@ -208,10 +200,7 @@ const paginationReducer = function( oldState={}, action ){
           [action.paginationKey]: {
             ...state[action.resource][action.paginationKey],
             query: action.query,
-            _request: {
-              ...state[action.resource][action.id]._request,
-              get: {pending: true, responseCode: null,}
-            }
+            fetching: true
           }
         }
       };
@@ -225,14 +214,7 @@ const paginationReducer = function( oldState={}, action ){
           [action.paginationKey]: {
             ...state[action.resource][action.paginationKey],
             query: action.query,
-            fetching: false,
-            _request: {
-              pending: false,
-              response: {
-                code: action.error.statusCode,
-                message: action.error.statusText
-              }
-            }
+            fetching: false
           }
         }
       };
@@ -245,6 +227,7 @@ const paginationReducer = function( oldState={}, action ){
           ...state[action.resource],
           [action.paginationKey]: {
             ...state[action.resource][action.paginationKey],
+            fetching: false,
             totalCount: action.count,
             currentPage: action.page,
             pageSize: action.pageSize,
@@ -252,13 +235,6 @@ const paginationReducer = function( oldState={}, action ){
               ...state[action.resource][action.paginationKey].pages,
               all: [...state[action.resource][action.paginationKey].pages.all, ...action.ids],
               [action.page]: action.ids
-            },
-            fetching: false,
-            _request: {
-              pending: false,
-              response: {
-                code: action.responseCode
-              }
             }
           }
         }

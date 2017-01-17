@@ -1,13 +1,17 @@
+import {schemas} from './schemas';
+import {denormalize} from 'denormalizr';
 
-export const selectItem = (state, resource, id) => {
+export const selectItem = (state, resource, id, selectRelated) => {
   /**
    * Selects a single resource item from the store
   **/
+  let item = null;
   try {
-    return state.resources[resource][id];
-  } catch (error) {
-    return null
-  }
+    item = state.resources[resource][id];
+    // return denormalize(item, state.resources, schemas[resource]);
+    return item;
+  } catch (error) {}
+  return item;
 };
 
 export const selectPage = (state, resource, paginationKey, page) => {
@@ -19,7 +23,7 @@ export const selectPage = (state, resource, paginationKey, page) => {
   try {
     state.pagination[resource][paginationKey].pages[page].map( id => {
       if( state.resources[resource][id]) {
-        itemList.push(state.resources[resource][id])
+        itemList.push(selectItem(state, resource, id))
       }
     })
   } catch (error) {}
@@ -42,7 +46,7 @@ export const selectCurrentPage = (state, resource, paginationKey, raw=false) => 
   return itemList
 };
 
-export const selectAll = (state, resource, raw=false) => {
+export const selectAll = (state, resource, orderKey=null, raw=false) => {
   /**
    * Selects all items currently available in the store
    * This does not necessarily reflect all items in Gapi,
@@ -50,8 +54,13 @@ export const selectAll = (state, resource, raw=false) => {
    * Conveniently, returns an array of items if raw=false.
   **/
   try {
-    return raw
-           ? state.resources[resource]
+    if(raw) {
+      return orderKey
+        ? sortObject(state.resources[resource], orderKey)
+        : state.resources[resource];
+    }
+    return orderKey
+           ? sortArray(Object.values(state.resources[resource]), orderKey)
            : Object.values(state.resources[resource])
   } catch (error) {
     return []
@@ -86,8 +95,30 @@ export const selectPagination = (state, resource, paginationKey) => {
   } catch(error) {}
 };
 
-export const selectSearch = (state, resource) => {
-  try {
-    return state.resources[resource].search
-  } catch(error) {}
+
+// ------------------------------ //
+
+const sortObject = (object, key) => {
+  const ordered = {};
+  const list = Object.entries(object).sort( (a, b) => {
+    const keyA = a[1][key],
+          keyB = b[1][key];
+    if (keyA < keyB) return -1;
+    if (keyA > keyB) return 1;
+    return 0;
+  });
+  list.map( entry => {
+    ordered[entry[0]] = object[entry[0]]
+  });
+  return ordered;
+};
+
+const sortArray = (list, key) => {
+  return list.sort((a, b) => {
+    const keyA = a[key],
+          keyB = b[key];
+    if (keyA < keyB) return -1;
+    if (keyA > keyB) return 1;
+    return 0;
+  });
 };

@@ -32,8 +32,8 @@ export const getResourceFail = (resource, id, error) => (
   {type: GET_RESOURCE_FAIL, resource, id, error}
 );
 
-export const allResource = (resource, getRelated={}) => (
-  {type: ALL_RESOURCE, resource, getRelated}
+export const allResource = (resource, query={}, getRelated={}, getStubs=true) => (
+  {type: ALL_RESOURCE, resource, getRelated, getStubs}
 );
 
 export const listResource = (resource, paginationKey, page=1, query={}, getRelated={}, pageSize=20) => (

@@ -1,5 +1,5 @@
 import {takeEvery} from 'redux-saga';
-import { put, select } from 'redux-saga/effects'
+import { put, select, call } from 'redux-saga/effects'
 import {normalize, arrayOf} from 'normalizr';
 import Gapi from './gapi-client';
 import {schemas} from './schemas';
@@ -23,14 +23,22 @@ import {selectItem, selectPagination} from './selectors';
 // TODO: Error Handling
 // TODO: For loops
 
-let tempId = 0;
-export function getTempId(){
+export const getActualResourceName = (resourceName, resourceItem, child) => {
   /**
-   * Only used when dispatching CREATE_RESOURCE
-   * Can be random, don't see a reason why this would be a problem **/
-  // TODO: not liking the whole idea of requiring an id when dispatching create.
-  return `_t${++tempId}`;
-}
+   * @param {Object} parent
+   * @param {String} child
+   * Using the schema, returns the actual resource name inside a resource item.
+   * e.g.:
+   *   1. `start_location` in `transport_dossiers.start_location` is actually a `places` resource. So will return "places"
+   *   2. `places` in `place_dossiers.places` is an actual resource name. So will just return "places"
+   */
+  const schema = schemas[resourceName];
+  if ( resourceItem.hasOwnProperty(child) ){
+      return child;
+  } else if( schema.hasOwnProperty(child) && resourceItem.hasOwnProperty(schema[resource]._key) ) {
+    return schema[child]._key
+  }
+};
 
 function _hasNext(res) {
   let hasNext = false;
@@ -125,14 +133,15 @@ function *_writeSubStubs(parentResource, entities){
   }
 }
 
-function *_getSubResources(entities, related){
-    for (const resource of Object.keys(related)) {
-      if (entities.hasOwnProperty(resource)) {
-        for (const id of Object.keys(entities[resource])) {
-          yield put(getResource(resource, id, related[resource]))
-        }
+function *_getSubResources(resourceName, entities, related){
+  for (const child of Object.keys(related)) {
+    const actualResourceName = getActualResourceName(resourceName, entities, child);
+    if (actualResourceName) {
+      for (const id of Object.keys(entities[actualResourceName])) {
+        yield put(getResource(actualResourceName, id, related[child]))
       }
     }
+  }
 }
 
 function *_writeResponse(response, resource, id, getRelated={}, requestType, responseCode){
@@ -144,8 +153,9 @@ function *_writeResponse(response, resource, id, getRelated={}, requestType, res
   yield put(writeResource(resource, id, normalized.entities[resource][id], requestType, responseCode));
   yield *_writeSubStubs(resource, normalized.entities);
 
-  if (getRelated)
-    yield *_getSubResources(normalized.entities, getRelated)
+  if (getRelated) {
+    yield *_getSubResources(resource, normalized.entities, getRelated)
+  }
 }
 
 //////////////////////////////////////////////
@@ -219,7 +229,7 @@ export function* _allResource(action){
 
   // while a "next page" exists
   while(true){
-    const response = yield *_requestPage(action.resource, page, {}, pageSize);
+    const response = yield *_requestPage(action.resource, page, action.query, pageSize);
 
     if ( response.error ) {
       // TODO: This is for a single Fail
@@ -230,7 +240,9 @@ export function* _allResource(action){
     // TODO: use normalized data instead
     // const normalized = normalize(response.body.results, arrayOf(schemas[action.resource]));
     yield* _writeStubs(action.resource, response.body);
-    yield* _writeResources(action.resource, response.body, action.getRelated);
+
+    if( action.getStubs )
+      yield* _writeResources(action.resource, response.body, action.getRelated);
 
     if ( _hasNext(response.body ))
       page++;
@@ -246,51 +258,39 @@ export function *_createResource(action) {
     gapi[action.resource]
         .post()
         .send(action.data)
-        .end( (err, res) => {
-          err
-            ? reject(err)
-            : resolve(res);
-        });
+        .end( (err, res) => { err ? reject(err) : resolve(res);});
   });
 
   const response = yield promise.then( response => response )
                                 .catch( error => ({error: error.response}) );
-
   if ( response.error ) {
-    action.reject ? yield action.reject(response.error) : null;
+    action.reject ? yield call(action.reject, response.error) : null;
     yield put(createResourceFail(action.resource, response.error));
     return;
   }
-
-  action.resolve ? yield action.resolve(response.status): null;
-  yield *_writeResponse(response, action.resource, response.id, {}, 'post', response.status);
+  action.resolve ? yield call(action.resolve, response.body): null;
+  yield *_writeResponse(response.body, action.resource, response.body.id, {}, 'post', response.status);
   yield put(clearPagination(action.resource));
 }
 
 export function *_updateResource(action) {
   const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
-
+    
   const promise = new Promise( (resolve, reject) => {
     gapi[action.resource]
         .patch(action.id)
         .send(action.data)
-        .end( (err, res) => {
-          err
-            ? reject(err)
-            : resolve(res);
-        });
+        .end( (err, res) => { err ? reject(err) : resolve(res); });
   });
 
   const response = yield promise.then( response => response )
                                 .catch( error   => ({error: error.response}) );
-
   if ( response.error ) {
-    action.reject ? yield action.reject(response.error) : null;
+    action.reject ? yield call(action.reject, response.error) : null;
     yield put(updateResourceFail(action.resource, action.id, response.error));
     return;
   }
-
-  action.resolve ? yield action.resolve(response.status): null;
+  action.resolve ? yield call(action.resolve, response.status): null;
   yield *_writeResponse(response.body, action.resource, action.id, {}, 'patch', response.status);
 }
 
