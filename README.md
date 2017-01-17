@@ -27,10 +27,10 @@ Documentation
 * [Getting Started](#getting-started)
 * [Actions](#actions)
     * [`getResource()`](#getresourceresourcename-resourceid--getrelated--forcefalse)
-    * [`listResource()`](#listresourceresourcename-paginationkey--page1-query--pagesize20)
-    * [`allResource()`](#allresource)
-    * [`createResource()`](#createresource)
-    * [`updateResource()`](#updateresource)
+    * [`listResource()`](#listresourceresource-paginationkey--page1--query--getrelated--pagesize20)
+    * [`allResource()`](#allresourceresource-query-getrelated-getstubstrue)
+    * [`createResource()`](#createresourceresource-data-resolve-reject)
+    * [`updateResource()`](#updateresourceresource-id-data-resolve-reject)
     * [Data Availability](#data-availability)    
 * [Selectors](#selectors)
     * [`selectItem`]()
@@ -39,8 +39,6 @@ Documentation
     * [`selectAll`]()
     * [`selectAllPages`]()
     * [`selectPagination`]()
-* Pagination
-* Fetching
 
 
 ### Getting Started
@@ -128,7 +126,7 @@ store.dispatch(getResource('dossiers', 10, {accommodation_dossiers: {primary_cou
 
 The above action will result the store to look like this:
 
-[[]]
+![The Store](/docs/media/store.png?raw=true "The Store")
 
 * `force`
 By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
@@ -150,7 +148,7 @@ store.dispatch(listResource('places', 'listOfPlaces'), 1, {}, {country: null})
 **Required** The name of the resource to request
 
 * `paginationKey` 
-**Required** On resource should be allowed to have multiple paginations. Lets say you have a form field component with search and filtering capabilities. One form might decide to use that component for more than one of it's fields. The search results (pagination) for each component, shouldn't affect the results in the other filed component. More importantly, neither should affect the list view page for that resource.
+**Required** A resource should be allowed to have multiple paginations. Lets say you have a form field component with search and filtering capabilities. One form might decide to use that component for more than one of it's fields. The search results (pagination) for each component, shouldn't affect the results in the other filed component. More importantly, neither should affect the list view page for that resource.
 Passing a `paginationKey` will allow the same resource to have multiple paginations.
 
 * `page`
@@ -219,6 +217,3 @@ Selectors
 #### selectAll
 #### selectAllPages
 #### selectPagination
-
-Pagination Key
---------------
