@@ -128,6 +128,8 @@ The above action will result the store to look like this:
 
 ![The Store](/docs/media/store.png?raw=true "The Store")
 
+Notice that we only made a request for dossier 10, but get realted is making sure all the related resources for this dossier are also loaded into the store. Also, features is marked as stub, because we did not make a request for it in our `getRelated` param.
+
 * `force`
 By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
 
