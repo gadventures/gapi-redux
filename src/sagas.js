@@ -14,11 +14,11 @@ import {
   getResource, getResourceFail,
   listResourceFail,
   updateResourceFail, createResourceFail,
-  writePagination, writeStub, writeResource, changePage,
+  writePagination, writeStub, writeResource,
   clearPagination
 } from './actions';
 
-import {selectItem, selectPagination} from './selectors';
+import {selectItem} from './selectors';
 
 // TODO: Error Handling
 // TODO: For loops
@@ -29,14 +29,13 @@ export const getActualResourceName = (resourceName, resourceItem, child) => {
    * @param {String} child
    * Using the schema, returns the actual resource name inside a resource item.
    * e.g.:
-   *   1. `start_location` in `transport_dossiers.start_location` is actually a `places` resource. So will return "places"
-   *   2. `places` in `place_dossiers.places` is an actual resource name. So will just return "places"
+   *   `start_location` in `transport_dossiers.start_location` is actually a `places` resource. So will return "places"
    */
   const schema = schemas[resourceName];
-  if ( resourceItem.hasOwnProperty(child) ){
-      return child;
-  } else if( schema.hasOwnProperty(child) && resourceItem.hasOwnProperty(schema[resource]._key) ) {
+  if( schema.hasOwnProperty(child) && resourceItem.hasOwnProperty(schema[child]._key) ) {
     return schema[child]._key
+  } else if ( resourceItem.hasOwnProperty(child) ){
+    return child;
   }
 };
 

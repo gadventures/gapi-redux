@@ -15,6 +15,11 @@ const place          = new Schema('places'),
       dossierFeature = new Schema('dossier_features'),
       dossierSegment = new Schema('dossier_segments');
 
+place.define({
+  country: country,
+  feature: feature
+});
+
 countryDossier.define({
   country: country,
   segment: dossierSegment
@@ -23,11 +28,6 @@ countryDossier.define({
 placeDossier.define({
   place: place,
   segment: dossierSegment
-});
-
-place.define({
-  country: country,
-  feature: feature
 });
 
 dossierFeature.define({
@@ -46,7 +46,8 @@ activityDossier.define({
 
 accommodationDossier.define({
   dossier_segment: dossierSegment,
-  primary_country: country
+  primary_country: country,
+  location: place
 });
 
 transportDossier.define({

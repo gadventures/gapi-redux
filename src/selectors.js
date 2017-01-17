@@ -1,15 +1,14 @@
 import {schemas} from './schemas';
 import {denormalize} from 'denormalizr';
 
-export const selectItem = (state, resource, id, selectRelated) => {
+export const selectItem = (state, resource, id) => {
   /**
    * Selects a single resource item from the store
   **/
   let item = null;
   try {
     item = state.resources[resource][id];
-    // return denormalize(item, state.resources, schemas[resource]);
-    return item;
+    return denormalize(item, state.resources, schemas[resource]);
   } catch (error) {}
   return item;
 };
@@ -69,8 +68,7 @@ export const selectAll = (state, resource, orderKey=null, raw=false) => {
 
 export const selectAllPages = (state, resource, paginationKey, raw=false) => {
   /**
-   * Selects all items on every page, loaded by a pagination.
-   * @type {Array}
+   * Like `selectALl` will return all loaded resources, but under a certain `paginationKey`
    */
   const data = {};
   try {

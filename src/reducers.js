@@ -23,10 +23,11 @@ const addResourceToState = (state, resource, id) => {
    * Make sure the store has an entry for this resource.
    * e.g. data for `countries` would be stored under `state.resources.countries`
    */
-  if ( !state.hasOwnProperty(resource) )
+  if ( !state.hasOwnProperty(resource) ) {
     state[resource] = {};
-  if (!state[resource].hasOwnProperty(id))
+  } if (!state[resource].hasOwnProperty(id) && state[resource][id]) {
     state[resource][id] = {};
+  }
   return state
 };
 

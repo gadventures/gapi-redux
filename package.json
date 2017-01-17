@@ -14,6 +14,7 @@
   "dependencies": {
     "deepcopy": "^0.6.1",
     "deepmerge": "^0.2.10",
+    "denormalizr": "^0.4.1",
     "history": "2.0.0",
     "jwt-decode": "2.0.1",
     "normalizr": "2.0.0",
@@ -65,13 +66,16 @@
     "webpack-merge": "^0.14.1",
     "webpack-validator": "^2.2.9"
   },
-  "repository" : {
-    "type" : "git" ,
-    "url" : "git@github.com:gadventures/gapi-redux.git"
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:gadventures/gapi-redux.git"
   },
-  "homepage" : "https://github.com/gadventures/gapi-redux",
-  "bugs" : {
-    "url" : "https://github.com/gadventures/gapi-redux/issues"
+  "homepage": "https://github.com/gadventures/gapi-redux",
+  "bugs": {
+    "url": "https://github.com/gadventures/gapi-redux/issues"
   },
-  "keywords": ["gapi", "redux"]
+  "keywords": [
+    "gapi",
+    "redux"
+  ]
 }
