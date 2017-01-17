@@ -123,10 +123,12 @@ The `getRelated` object can include multiple keys. `getResource` will attempt to
 The value of each key can either be `null` or another object containing more resource keys.
 
 ```javascript
-// Make additional requests for the related `primary_country` and `location` 
-// Also, requests the `country` of the returned `location`
-store.dispatch(getResource('accommodation_dossiers', 123, {primary_country: null, location: {country: null}}))
+store.dispatch(getResource('dossiers', 10, {accommodation_dossiers: {primary_country: null, location: {country: null}}}))               
 ```
+
+The above action will result the store to look like this:
+
+[[]]
 
 * `force`
 By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
