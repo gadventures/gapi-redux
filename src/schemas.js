@@ -47,7 +47,11 @@ activityDossier.define({
 accommodationDossier.define({
   dossier_segment: dossierSegment,
   primary_country: country,
-  location: place
+  location: place,
+  address: {
+    city: place,
+    country: country
+  }
 });
 
 transportDossier.define({
