@@ -3,14 +3,16 @@ gapi-redux
 
 A redux client for [Gapi]().
 
-**Still in alpha phase**
+> **Still in alpha phase**
 
 Requirements
 ------------
 
-* [redux]()
-* [redux-sagas]()
+* [redux](https://github.com/reactjs/redux)
+* [redux-sagas](https://github.com/redux-saga/redux-saga)
 * [gapi-js](https://github.com/gadventures/gapi-js)
+
+`React` is *not* a requirement for gapi-redux and can be used with any js library.
 
 Why
 ---
@@ -44,7 +46,7 @@ Documentation
 
 Add `gapi-redux`'s reducer and sagas to your reducer and sagas respectively
 
-your-reducers.js
+#### `your-reducers.js`
 ```javascript
 import {combineReducers} from 'redux';
 import gapiReducers from 'gapi-redux';
@@ -55,7 +57,7 @@ export default = combineReducers({
 })
 ```
 
-your-sagas.js
+#### `your-sagas.js`
 ```javascript
 import {fork} from 'redux-saga/effects';
 import gapiSagas from 'gapi-redux';
@@ -94,6 +96,7 @@ No matter how many times or through what action a resource is requested, gapi-re
 
 Using [normalizer](), all resources will be normalized before saving to the store. 
 
+
 #### `getResource(resourceName, resourceId [, getRelated={} [, force=false]])`
 Will attempt to retrieve a single resource from gapi.  
 
@@ -108,14 +111,19 @@ store.dispatch(getResource('places', 123, {country: null }))
 // will then attempt to make a request for each country associated with each place
 store.dispatch(getResource('place_dossiers', 123, {place: {country: null }}))  
 ```
-* `resourceName`
-**Required** The name of the resource to request
 
-* `resourceId`
-**Required** The id of the resource to request
+##### Arguments
+* **`resourceName`**`: String [required]`
 
-* `getRelated`
-By default when requesting a resource, any child resources present will be marked as stubs. `getRelated` is used to make deep requests for those child stubs.
+  The name of the resource to request
+
+* **`resourceId`**`: Number [required]`
+
+  The id of the resource to request
+
+* **`getRelated`**`: Object`
+
+  By default when requesting a resource, any child resources present will be marked as stubs. `getRelated` is used to make deep requests for those child stubs.
 The `getRelated` object can include multiple keys. `getResource` will attempt to request all the given resources after the main resource has been retrieved.
 The value of each key can either be `null` or another object containing more resource keys.
 
@@ -129,7 +137,7 @@ The above action will result the following state:
 
 Notice that we only made a request for dossier 10, but `getRelated` is making additional requests to all related resources for the current dossier and after normalizing the data, saves them to the store. Also, since `features` was not included in `getRelated`, it is marked as stub.
 
-* `force`
+* **`force`**`: Boolean [default=false]`
 By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
 
 
@@ -144,39 +152,49 @@ store.dispatch(listResource('countries', 'myCountries'))
 // After retrieving the list of places, will request each place's related country and save it in the store. 
 store.dispatch(listResource('places', 'listOfPlaces'), 1, {}, {country: null})
 ```
+##### Arguments
+* **`resource`**`: String [required]`
 
-* `resource`
-**Required** The name of the resource to request
+  The name of the resource to request
 
-* `paginationKey` 
-**Required** A resource should be allowed to have multiple paginations. Lets say you have a form field component with search and filtering capabilities. One form might decide to use that component for more than one of it's fields. The search results (pagination) for each component, shouldn't affect the results in the other filed component. More importantly, neither should affect the list view page for that resource.
-Passing a `paginationKey` will allow the same resource to have multiple paginations.
+* **`paginationKey`**` : String [required]`
 
-* `page`
-Page number to request
+  A resource should be allowed to have multiple paginations. Lets say you have a form field component with search and filtering capabilities. One form might decide to use that component for more than one of it's fields. The search results (pagination) for each component, shouldn't affect the results in the other filed component. More importantly, neither should affect the list view page for that resource.
+  Passing a `paginationKey` will allow the same resource to have multiple paginations.
 
-* `query`
-Any query to pass to Gapi
+* **`page`**` : Number [default=1]`
 
-* `getRelated`
-Request related resources for each item in the list after the retrieving the main resource 
+  Page number to request
+
+* **`query`**` : Object`
+
+  Any query to pass to Gapi
+
+* **`getRelated`**` : Object`
+
+  Request related resources for each item in the list after the retrieving the main resource 
 
 
 #### allResource(resource, query={}, getRelated={}, getStubs=true)
 
 Request every item in a resource. `allResource` will make separate calls to each page of a resource. Depending on the resource, this can sometimes take long time to complete. Use with caution.  
 
-* `resource`
-The name of the resource
+##### Arguments
+* **`resource`**` : String [required]`
 
-* `query`
-Any query to pass to Gapi
+  The name of the resource
 
-* `getRelated`
-Request related resources for each item in the list after the retrieving the main resource
+* **`query`**` : Object`
 
-* `getStubs`
-In most cases when using `allResource`, collecting only the stubs would suffice. Passing `false` can help speedup the request process. This value is `true` by default.
+  Any query to pass to Gapi
+
+* **`getRelated`**`: Object`
+
+  Request related resources for each item in the list after the retrieving the main resource
+
+* **`getStubs`**`: Boolean [default=true]`
+
+  In most cases when using `allResource`, collecting only the stubs would suffice. Passing `false` can help speedup the request process.   This value is `true` by default.
 
 #### `createResource(resource, [data={}, [resolve, [reject]]])`
 
