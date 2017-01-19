@@ -175,7 +175,7 @@ store.dispatch(listResource('places', 'listOfPlaces'), 1, {}, {country: null})
   Request related resources for each item in the list after the retrieving the main resource 
 
 
-#### allResource(resource, query={}, getRelated={}, getStubs=true)
+#### `allResource(resource, query={}, getRelated={}, getStubs=true)`
 
 Request every item in a resource. `allResource` will make separate calls to each page of a resource. Depending on the resource, this can sometimes take long time to complete. Use with caution.  
 
@@ -208,22 +208,19 @@ This allows for gradually displaying results, to the user, as they load. While t
  
 ##### `getResource()`
    1. Request the actual resource
-   2. Any child resources marked by schemas will be moved to their own resource branch in the store
-   3. If `getRelated` made a request for that child resource, a separate `getResource()` call is made for the child.
-        4. Repeat step 1 for child resources.
+   2. Any child resources marked by schemas will be normalized and moved to their own resource branch in the store
+   3. If `getRelated` made a request for a child resource, a separate `getResource()` call is made for the child. Repeat step 1 for child resources.
 
 ##### `listResource()`
-   1. Make a request for the list endpoint of a resource. The returned result will hold pagination information along the a list of stubs.
+   1. Make a request for the list endpoint of a resource. The returned result will hold pagination information along with a list of stubs.
    2. Write the pagination information
    3. Write the list of stubs to the store in one go.
-   4. Dispatch `getResource()` for each stub in the list.
-   5. Go through all steps of `getResource()` for each stub.
+   4. Dispatch `getResource()` for each stub in the list. Repeat all steps of `getRealted` for each resource.
 
 ##### `allResource()`
    1. Make a request for the first page of a resource. The page size is set to 50.
    2. Write stubs to the store in one go.
-   3. Dispatch `getRelated()` for each stub in the list.
-   4. Go through all steps of `getResource()` for each stub.
+   3. Dispatch `getRelated()` for each stub in the list. Repeat all steps of `getRealted` for each resource.
    5. Make a request for the next page if available.
 
 
