@@ -197,8 +197,24 @@ Request every item in a resource. `allResource` will make separate calls to each
   In most cases when using `allResource`, collecting only the stubs would suffice. Passing `false` can help speedup the request process.   This value is `true` by default.
 
 #### `createResource(resource, [data={}, [resolve, [reject]]])`
+Creates a single resource.
+
+You can wrap `createResource` in a promise. It'll call `resolve` and `reject` accordingly
+
+```javascript
+const p = new Promise( (resolve, reject) => {
+ store.dispatch( createResource('place_dossier', {some data...}, resolve, reject);
+}).then(
+ ( response => { /* do something with the response */ },
+ ( error    => { /* do something with the error */ }
+)
+```
 
 #### `updateResource(resource, id, [data={}, [resolve, [reject]]])`
+
+Updates a single resource.
+
+You can wrap `updateResource` in a promise. It'll call `resolve` and `reject` accordingly
 
 #### Data Availability
 
