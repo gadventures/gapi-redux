@@ -35,11 +35,11 @@ Documentation
     * [Data Availability](#data-availability)    
 * [Selectors](#selectors)
     * [`selectItem`](#selectitemstate-resource-id)
-    * [`selectPage`](#selectpagestate-resource-paginationKey-page)
-    * [`selectCurrentPage`](#selectcurrentpagestate-resource-paginationKey)
-    * [`selectAll`](#selectallstate-resource-orderKeynull-rawfalse)
-    * [`selectAllPages`](#selectallpagesstate-resource-paginationKey-rawfalse)
-    * [`selectPagination`](#selectpaginationstate-resource-paginationKey)
+    * [`selectPage`](#selectpagestate-resource-paginationkey-page)
+    * [`selectCurrentPage`](#selectcurrentpagestate-resource-paginationkey)
+    * [`selectAll`](#selectallstate-resource-orderkeynull-rawfalse)
+    * [`selectAllPages`](#selectallpagesstate-resource-paginationkey-rawfalse)
+    * [`selectPagination`](#selectpaginationstate-resource-paginationkey)
 
 
 ### Getting Started
@@ -200,27 +200,26 @@ Request every item in a resource. `allResource` will make separate calls to each
 
 #### `updateResource(resource, id, [data={}, [resolve, [reject]]])`
 
-Data Availability
------------------
+#### Data Availability
 
 When dispatching `getResource()`, `listResource()`, and `allResource()` the actual resource and it's children will be added to the store through multiple requests. In each request, part of the data will be written to the store
 
 This allows for gradually displaying results, to the user, as they load. While the user is presented with the base data, related resources will be slowly loaded into the page.
  
-#### `getResource()`
+##### `getResource()`
    1. Request the actual resource
    2. Any child resources marked by schemas will be moved to their own resource branch in the store
    3. If `getRelated` made a request for that child resource, a separate `getResource()` call is made for the child.
         4. Repeat step 1 for child resources.
 
-#### `listResource()`
+##### `listResource()`
    1. Make a request for the list endpoint of a resource. The returned result will hold pagination information along the a list of stubs.
    2. Write the pagination information
    3. Write the list of stubs to the store in one go.
    4. Dispatch `getResource()` for each stub in the list.
    5. Go through all steps of `getResource()` for each stub.
 
-#### `allResource()`
+##### `allResource()`
    1. Make a request for the first page of a resource. The page size is set to 50.
    2. Write stubs to the store in one go.
    3. Dispatch `getRelated()` for each stub in the list.
@@ -235,8 +234,8 @@ Selectors
 #### `selectItem(state, resource, id)`
 Selects a single item from the store. Will return `null` if not found.
 
-**Important**
-Using [normalizr](), all requests to Gapi will be normalized before saving to the store. `selectItem` will return a denormalized version of your resource.  
+> **Important**
+> Using [normalizr](), all requests to Gapi will be normalized before saving to the store. `selectItem` will return a denormalized version of your resource.  
 
 ```javascript
 // requesting the place and place.country in `getRelated`
