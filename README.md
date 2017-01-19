@@ -14,8 +14,7 @@ Requirements
 
 Why
 ---
-You made a redux app that connects to Gapi and now you have all sorts of actions like `REQUEST_PLACE_DOSSIER` and `REQUEST_ITINERARY` and the list keeps growing as you move forward.
-You're also worried about resources that you've already requested, are you fetching them again? Do you need more actions to request the child resources? 
+You made a redux app that connects to Gapi and now you have all sorts of actions like `REQUEST_PLACE_DOSSIER` and `REQUEST_ITINERARY` and the list keeps growing as you move forward. You're also worried about resources that you've already requested, are you fetching them again? Do you need more actions to request the child resources? 
  
 It would've been easier if you had an action creator that just did `getResource('place_dossiers', 123)`.
 And it would've been smart enough to handle your pagination and all the duplicate requests different components in your project make, and knew how to drill down to make separate requests for the children, right?
@@ -33,12 +32,12 @@ Documentation
     * [`updateResource()`](#updateresourceresource-id-data-resolve-reject)
     * [Data Availability](#data-availability)    
 * [Selectors](#selectors)
-    * [`selectItem`]()
-    * [`selectPage`]()
-    * [`selectCurrentPage`]()
-    * [`selectAll`]()
-    * [`selectAllPages`]()
-    * [`selectPagination`]()
+    * [`selectItem`](#selectitemstate-resource-id)
+    * [`selectPage`](#selectpagestate-resource-paginationKey-page)
+    * [`selectCurrentPage`](#selectcurrentpagestate-resource-paginationKey)
+    * [`selectAll`](#selectallstate-resource-orderKeynull-rawfalse)
+    * [`selectAllPages`](#selectallpagesstate-resource-paginationKey-rawfalse)
+    * [`selectPagination`](#selectpaginationstate-resource-paginationKey)
 
 
 ### Getting Started
@@ -91,9 +90,9 @@ And your're all set. Any gapi-redux actions you dispatch will now be caught by t
 
 Actions
 -------
-Actions will help load data into your store. [`Selectors`](#selectors) will allow you to read the loaded data. 
-
 No matter how many times or through what action a resource is requested, gapi-redux will only request that resource once. All other requests will be ignored
+
+Using [normalizer](), all resources will be normalized before saving to the store. 
 
 #### `getResource(resourceName, resourceId [, getRelated={} [, force=false]])`
 Will attempt to retrieve a single resource from gapi.  
@@ -124,11 +123,11 @@ The value of each key can either be `null` or another object containing more res
 store.dispatch(getResource('dossiers', 10, {accommodation_dossiers: {primary_country: null, location: {country: null}}}))               
 ```
 
-The above action will result the store to look like this:
+The above action will result the following state:
 
 ![The Store](/docs/media/store.png?raw=true "The Store")
 
-Notice that we only made a request for dossier 10, but `getRelated` is making additional requests to all related resources for the current dossier and loades them into the store. Also, since `features` was not included in `getRelated`, it is marked as stub.
+Notice that we only made a request for dossier 10, but `getRelated` is making additional requests to all related resources for the current dossier and after normalizing the data, saves them to the store. Also, since `features` was not included in `getRelated`, it is marked as stub.
 
 * `force`
 By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
@@ -213,9 +212,68 @@ This allows for gradually displaying results, to the user, as they load. While t
 
 Selectors
 ---------
-#### selectItem
-#### selectPage
-#### selectCurrentPage
-#### selectAll
-#### selectAllPages
-#### selectPagination
+
+
+#### `selectItem(state, resource, id)`
+Selects a single item from the store. Will return `null` if not found.
+
+**Important**
+Using [normalizr](), all requests to Gapi will be normalized before saving to the store. `selectItem` will return a denormalized version of your resource.  
+
+```javascript
+// requesting the place and place.country in `getRelated`
+store.dispatch(getResource('place_dossiers', 123, {place: {country: null}}))
+//...
+const state = store.getState();
+const dossier = selectItem(state, 'place_dossiers', 123);
+
+// Selectors will return denormalized data. 
+console.log(dossier.place.country.name) // The name of the country
+console.log(dossier.segment.name)       // Null.
+
+// `segment` was never requested by either `getRelated` or any other action. It's just stub data.
+
+```
+
+#### `selectPage(state, resource, paginationKey, page)`
+Selects all resource items in one page and returns a denormalized version of each. Returns an array of items.
+   
+#### `selectCurrentPage(state, resource, paginationKey)`
+Selects all resource items in the current page. Technically this function should be used within your components, instead of `selectPage`. The pagination already knows which page to display. Returns an array of items.
+
+
+#### `selectAll(state, resource, orderKey=null, raw=false)`
+Selects all items currently available in the store. This does not necessarily reflect all items in Gapi, only what the action have loaded into the store. Returns an array of items if `raw=false`.
+
+* `orderKey`: Order the resource based on one of it's keys
+* `raw`: if `true`, the selector will not attempt to convert the data to an array, and will return the exact format saved in the store.
+
+#### `selectAllPages(state, resource, paginationKey, raw=false)`
+Like `selectALl` will return all loaded resources, but under a certain `paginationKey`. Possible use cases are for pages where each page of data loads after scrolling to the bottom or by clicking on a "Load More" button.
+
+#### `selectPagination(state, resource, paginationKey)`
+Selects the pagination info of a resource/paginationKey combination.
+
+
+```javascript
+
+store.dispatch(listResource('place_dossiers', 'aKey', 1, {}, {}, 3); // Request page 1, with a page size of 3
+store.dispatch(listResource('place_dossiers', 'aKey', 2, {}, {}, 3); // Request the 2nd page.
+...
+const state = store.getState(); 
+const pagination = selectPagination(state, 'place_dosiers', 'aKey');
+console.log(pagination)
+
+... 
+{
+    fetching: false
+    totalCount: 1000 // The number of total items this resource has
+    currentPage: 2   // The second page was the last requested page by the actions
+    pageSize: 3
+    pages: {
+      1:   [ 1, 2, 3 ], // resource ids of items in page 1
+      2:   [ 4, 5, 6 ]  // resource ids of items in page 2
+      all: [ 1, 2, 3, 4, 5, 6  ], // all ids currently loaded by the store
+    }
+}
+```
