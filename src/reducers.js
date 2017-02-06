@@ -200,7 +200,7 @@ const paginationReducer = function( oldState={}, action ){
           [action.paginationKey]: {
             ...state[action.resource][action.paginationKey],
             query: action.query,
-            fetching: true
+            fetching: parseInt(action.page)
           }
         }
       };
@@ -214,7 +214,7 @@ const paginationReducer = function( oldState={}, action ){
           [action.paginationKey]: {
             ...state[action.resource][action.paginationKey],
             query: action.query,
-            fetching: false
+            fetching: null
           }
         }
       };
@@ -227,7 +227,7 @@ const paginationReducer = function( oldState={}, action ){
           ...state[action.resource],
           [action.paginationKey]: {
             ...state[action.resource][action.paginationKey],
-            fetching: false,
+            fetching: null,
             totalCount: action.count,
             currentPage: action.page,
             pageSize: action.pageSize,
