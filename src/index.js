@@ -36,7 +36,7 @@ export {
 };
 
 // ----------------------- //
-/*
+//*
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 const sagaMiddleware = createSagaMiddleware();
@@ -75,4 +75,4 @@ store.subscribe(handleChanges);
 
 // store.dispatch(createResource('place_dossiers', getTempId(), {"place": {"id": 8896463}, "publish_state": "unpublished"})); // Validation error
 // store.dispatch(createResource('place_dossiers', 666, {publish_state: 'unpublished'})); // 200
-*/
+//*/

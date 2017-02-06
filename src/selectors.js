@@ -45,25 +45,32 @@ export const selectCurrentPage = (state, resource, paginationKey, raw=false) => 
   return itemList
 };
 
-export const selectAll = (state, resource, orderKey=null, raw=false) => {
+export const selectAll = (state, resource, orderKey=null, filter=null, raw=false) => {
   /**
    * Selects all items currently available in the store
    * This does not necessarily reflect all items in Gapi,
    * only what has been loaded into the store.
    * Conveniently, returns an array of items if raw=false.
   **/
+  let itemList = [];
   try {
     if(raw) {
       return orderKey
         ? sortObject(state.resources[resource], orderKey)
         : state.resources[resource];
     }
+    Object.keys(state.resources[resource]).map( id => {
+      itemList.push(selectItem(state, resource, id))
+    });
+
+    if( filter )
+      itemList = itemList.filter(filter);
+
     return orderKey
-           ? sortArray(Object.values(state.resources[resource]), orderKey)
-           : Object.values(state.resources[resource])
-  } catch (error) {
-    return []
-  }
+           ? sortArray(itemList, orderKey)
+           : itemList
+  } catch (error) {}
+  return itemList;
 };
 
 export const selectAllPages = (state, resource, paginationKey, raw=false) => {
