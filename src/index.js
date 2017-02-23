@@ -1,3 +1,7 @@
+if (! window._babelPolyfill) {
+  require("babel-polyfill");
+}
+
 import reducers from './reducers';
 import sagas from './sagas';
 import {

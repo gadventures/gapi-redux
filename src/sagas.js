@@ -1,7 +1,7 @@
 import {takeEvery} from 'redux-saga';
 import { put, select, call } from 'redux-saga/effects'
 import {normalize, arrayOf} from 'normalizr';
-import Gapi from './gapi-client';
+import Gapi from 'gapi-js';
 import {schemas} from './schemas';
 
 import {
@@ -50,11 +50,11 @@ function _hasNext(res) {
   return hasNext;
 }
 
-function *_requestItem(resource, id) {
+function *_requestItem(resource, id, conf) {
   /**
    * Makes a request for a single object from gapi.
    */
-  const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
+  const gapi = new Gapi(conf);
   const promise = new Promise( (resolve, reject) => {
     gapi[resource]
       .get(id)
@@ -68,8 +68,8 @@ function *_requestItem(resource, id) {
                       .catch( error   => ({error: error.response}) );
 }
 
-export function *_requestPage(resource, page, query={}, pageSize=20) {
-  const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
+export function *_requestPage(resource, page, query={}, pageSize=20, conf) {
+  const gapi = new Gapi(conf);
 
   const promise = new Promise( (resolve, reject) => {
     gapi[resource]
@@ -161,7 +161,7 @@ function *_writeResponse(response, resource, id, getRelated={}, requestType, res
 ////////////// Action Handelers //////////////
 //////////////////////////////////////////////
 
-export function* _getResource(action) {
+export function* _getResource(conf, action) {
   /**
    * As long as a sub-resource is marked by the schema, it'll be writen to the store as
    * a stub. To retrieve the actual child resource the resource names must be passed in `action.getRelated`
@@ -173,7 +173,7 @@ export function* _getResource(action) {
       return;
   }
 
-  const response  = yield *_requestItem(action.resource, action.id);
+  const response  = yield *_requestItem(action.resource, action.id, conf);
 
   if ( response.error ) {
     yield put(getResourceFail(action.resource, action.id, response.error));
@@ -182,7 +182,7 @@ export function* _getResource(action) {
   yield _writeResponse(response.body, action.resource, action.id, action.getRelated, 'get', response.status);
 }
 
-export function* _listResource(action){
+export function* _listResource(conf, action){
   /**
    * Will read the list page of a resource from gapi and write the stub info.
    * In a second attempt, will try to request the actual resource one by one.
@@ -196,7 +196,7 @@ export function* _listResource(action){
   //   return
   // }
 
-  const response = yield *_requestPage(action.resource, action.page, action.query, action.pageSize);
+  const response = yield *_requestPage(action.resource, action.page, action.query, action.pageSize, conf);
 
   if ( response.error ) {
     // TODO: This is for a single Fail
@@ -213,7 +213,7 @@ export function* _listResource(action){
   yield* _writeResources(action.resource, response.body, action.getRelated);
 }
 
-export function* _allResource(action){
+export function* _allResource(conf, action){
   /**
    * Will gather items from all pages of a resource.
    * Good for base/core resources like countries, states, or places
@@ -228,7 +228,7 @@ export function* _allResource(action){
 
   // while a "next page" exists
   while(true){
-    const response = yield *_requestPage(action.resource, page, action.query, pageSize);
+    const response = yield *_requestPage(action.resource, page, action.query, pageSize, conf);
 
     if ( response.error ) {
       // TODO: This is for a single Fail
@@ -250,8 +250,8 @@ export function* _allResource(action){
   }
 }
 
-export function *_createResource(action) {
-  const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
+export function *_createResource(conf, action) {
+  const gapi = new Gapi(conf);
 
   const promise = new Promise( (resolve, reject) => {
     gapi[action.resource]
@@ -272,9 +272,9 @@ export function *_createResource(action) {
   yield put(clearPagination(action.resource));
 }
 
-export function *_updateResource(action) {
-  const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
-    
+export function *_updateResource(conf, action) {
+  const gapi = new Gapi(conf);
+
   const promise = new Promise( (resolve, reject) => {
     gapi[action.resource]
         .patch(action.id)
@@ -293,8 +293,8 @@ export function *_updateResource(action) {
   yield *_writeResponse(response.body, action.resource, action.id, {}, 'patch', response.status);
 }
 
-export function *_deleteResource(action) {
-  const gapi = new Gapi({key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'});
+export function *_deleteResource(conf, action) {
+  const gapi = new Gapi(conf);
 
   const promise = new Promise( (resolve, reject) => {
     gapi[action.resource]
@@ -314,13 +314,13 @@ export function *_deleteResource(action) {
   }
 }
 
-export default function* () {
+export default function* (conf) {
   yield [
-    takeEvery( GET_RESOURCE,    _getResource ),
-    takeEvery( LIST_RESOURCE,   _listResource ),
-    takeEvery( ALL_RESOURCE,    _allResource ),
-    takeEvery( UPDATE_RESOURCE, _updateResource ),
-    takeEvery( CREATE_RESOURCE, _createResource ),
-    takeEvery( DELETE_RESOURCE, _deleteResource )
+    takeEvery( GET_RESOURCE,    _getResource,    conf ),
+    takeEvery( LIST_RESOURCE,   _listResource,   conf ),
+    takeEvery( ALL_RESOURCE,    _allResource,    conf ),
+    takeEvery( UPDATE_RESOURCE, _updateResource, conf ),
+    takeEvery( CREATE_RESOURCE, _createResource, conf ),
+    takeEvery( DELETE_RESOURCE, _deleteResource, conf )
   ]
 }

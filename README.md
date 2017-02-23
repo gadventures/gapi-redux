@@ -1,22 +1,17 @@
 gapi-redux
 ==========
 
-A redux client for [Gapi]().
+A redux client for the G Adventures' API (G API). Before you can use this library you need to [signup for G API](https://developers.gadventures.com/docs/index.html)
+
+> **Important:** as of now gapi-redux only supports a subset of resources. Look in [src/schemas.js](https://github.com/gadventures/gapi-redux/blob/master/src/schemas.js) to see the list of supported resources.
 
 > **Still in alpha phase**
-
-Requirements
-------------
-
-* [redux](https://github.com/reactjs/redux)
-* [redux-sagas](https://github.com/redux-saga/redux-saga)
-* [gapi-js](https://github.com/gadventures/gapi-js)
 
 `React` is *not* a requirement for gapi-redux and can be used with any js library.
 
 Why
 ---
-You made a redux app that connects to Gapi and now you have all sorts of actions like `REQUEST_PLACE_DOSSIER` and `REQUEST_ITINERARY` and the list keeps growing as you move forward. You're also worried about resources that you've already requested, are you fetching them again? Do you need more actions to request the child resources? 
+You've made a redux app that connects to G API and now you have all sorts of actions like `REQUEST_PLACE_DOSSIER` and `REQUEST_ITINERARY` and the list keeps growing as you move forward. You're also worried about resources that you've already requested, are you fetching them again? Do you need more actions to request the child resources? 
  
 It would've been easier if you had an action creator that just did `getResource('place_dossiers', 123)`.
 And it would've been smart enough to handle your pagination and all the duplicate requests different components in your project make, and knew how to drill down to make separate requests for the children, right?
@@ -44,12 +39,12 @@ Documentation
 
 ### Getting Started
 
-Add `gapi-redux`'s reducer and sagas to your reducer and sagas respectively
+Add `gapi-redux`'s reducer.
 
 #### `your-reducers.js`
 ```javascript
 import {combineReducers} from 'redux';
-import gapiReducers from 'gapi-redux';
+import {reducers as gapiReducers} from 'gapi-redux';
 
 export default = combineReducers({
   ...gapiReducers
@@ -57,14 +52,16 @@ export default = combineReducers({
 })
 ```
 
+Add `gapi-redux`'s sagas to your sagas and pass in your G API key.
+
 #### `your-sagas.js`
 ```javascript
 import {fork} from 'redux-saga/effects';
-import gapiSagas from 'gapi-redux';
+import {sagas as gapiSagas} from 'gapi-redux';
 
 export default function *sagas() {
   yield [
-    fork(gapiSagas),
+    fork(gapiSagas, {key: YourGAPIKey}),
     fork(yourSagas)
   ];
 ```
@@ -98,7 +95,7 @@ Using [normalizer](), all resources will be normalized before saving to the stor
 
 
 #### `getResource(resourceName, resourceId [, getRelated={} [, force=false]])`
-Will attempt to retrieve a single resource from gapi.  
+Will attempt to retrieve a single resource from the G API.  
 
 ```javascript
 // Request a single resource
@@ -168,7 +165,7 @@ store.dispatch(listResource('places', 'listOfPlaces'), 1, {}, {country: null})
 
 * **`query`**` : Object`
 
-  Any query to pass to Gapi
+  Any query to pass to the G API
 
 * **`getRelated`**` : Object`
 
@@ -186,7 +183,7 @@ Request every item in a resource. `allResource` will make separate calls to each
 
 * **`query`**` : Object`
 
-  Any query to pass to Gapi
+  Any query to pass to the G API
 
 * **`getRelated`**`: Object`
 
@@ -248,7 +245,7 @@ Selectors
 Selects a single item from the store. Will return `null` if not found.
 
 > **Important**
-> Using [normalizr](), all requests to Gapi will be normalized before saving to the store. `selectItem` will return a denormalized version of your resource.  
+> Using [normalizr](), all requests to G API will be normalized before saving to the store. `selectItem` will return a denormalized version of your resource.  
 
 ```javascript
 // requesting the place and place.country in `getRelated`
@@ -273,7 +270,7 @@ Selects all resource items in the current page. Technically this function should
 
 
 #### `selectAll(state, resource, orderKey=null, raw=false)`
-Selects all items currently available in the store. This does not necessarily reflect all items in Gapi, only what the action have loaded into the store. Returns an array of items if `raw=false`.
+Selects all items currently available in the store. This does not necessarily reflect all items in G API, only what the action have loaded into the store. Returns an array of items if `raw=false`.
 
 * `orderKey`: Order the resource based on one of it's keys
 * `raw`: if `true`, the selector will not attempt to convert the data to an array, and will return the exact format saved in the store.
