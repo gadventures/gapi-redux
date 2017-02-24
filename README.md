@@ -5,9 +5,7 @@ A redux client for the G Adventures' API (G API). Before you can use this librar
 
 > **Important:** as of now gapi-redux only supports a subset of resources. Look in [src/schemas.js](https://github.com/gadventures/gapi-redux/blob/master/src/schemas.js) to see the list of supported resources.
 
-> **Still in alpha phase**
-
-`React` is *not* a requirement for gapi-redux and can be used with any js library.
+`React` is *not* a requirement for this library and can be used with any js library.
 
 Why
 ---
