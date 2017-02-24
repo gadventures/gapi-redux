@@ -7,13 +7,8 @@ export const selectItem = (state, resource, id) => {
   **/
   let item = null;
   try {
-    console.log('===================')
     item = state.resources[resource][id];
-    const a =  denormalize(item, state.resources, schemas[resource]);
-    console.log(item)
-    console.log(a)
-    console.log('---------------')
-    return a
+    return denormalize(item, state.resources, schemas[resource]);
   } catch (error) {}
   return item;
 };
