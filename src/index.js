@@ -10,7 +10,8 @@ import {
   allResource,
   updateResource,
   createResource,
-  deleteResource
+  deleteResource,
+  clearPagination
 } from './actions';
 import {
   selectItem,
