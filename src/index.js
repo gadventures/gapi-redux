@@ -31,7 +31,7 @@ export {
   updateResource,
   createResource,
   deleteResource,
-
+  clearPagination,
   selectItem,
   selectPage,
   selectCurrentPage,

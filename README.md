@@ -25,6 +25,7 @@ Documentation
     * [`allResource()`](#allresourceresource-query-getrelated-getstubstrue)
     * [`createResource()`](#createresourceresource-data-resolve-reject)
     * [`updateResource()`](#updateresourceresource-id-data-resolve-reject)
+    * [`clearPagination()`](#clearpagination)
     * [Data Availability](#data-availability)    
 * [Selectors](#selectors)
     * [`selectItem`](#selectitemstate-resource-id)
@@ -210,6 +211,21 @@ const p = new Promise( (resolve, reject) => {
 Updates a single resource.
 
 You can wrap `updateResource` in a promise. It'll call `resolve` and `reject` accordingly
+
+#### clearPagination(resource [, paginationKey])
+
+Clears the pagination data from the store of a given resource.
+
+#### Arguments
+
+* **`resource`**` : String [required]`
+
+  The name of the resource
+
+* **`paginationKey`**` : String`
+
+  Will only clear pagination data under a given `paginationKey`. 
+
 
 #### Data Availability
 
