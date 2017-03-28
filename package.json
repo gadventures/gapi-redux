@@ -1,12 +1,13 @@
 {
   "name": "gapi-redux",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A redux client for G Adventures' API",
   "main": "build/gapi-redux.js",
   "module": "src/index.js",
   "scripts": {
     "start": "webpack-dev-server -d --inline --history-api-fallback",
     "build": "webpack --display-error-details -p --progress --colors",
+    "build:watch": "webpack --display-error-details -p --progress --colors --watch",
     "prepublish": "npm run build",
     "test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js \"test/**/*@(.js|.jsx)\"",
     "test:watch": "npm run test -- --watch"
@@ -15,7 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "denormalizr": "^0.4.1",
-    "gapi-js": "^1.0.3",
+    "gapi-js": "^1.0.4",
     "normalizr": "2.0.0",
     "redux": "^3.5.2",
     "redux-saga": "^0.10.5"

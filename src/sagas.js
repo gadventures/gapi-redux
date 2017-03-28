@@ -53,7 +53,7 @@ function _hasNext(res) {
 function *_requestItem(resource, id, conf) {
   /**
    * Makes a request for a single object from gapi.
-   */
+   */ 
   const gapi = new Gapi(conf);
   const promise = new Promise( (resolve, reject) => {
     gapi[resource]
@@ -68,13 +68,13 @@ function *_requestItem(resource, id, conf) {
                       .catch( error   => ({error: error.response}) );
 }
 
-export function *_requestPage(resource, page, query={}, pageSize=20, orderBy=null, conf) {
+export function *_requestPage(resource, page, query={}, pageSize=20, orderBy=[], conf) {
   const gapi = new Gapi(conf);
 
   const promise = new Promise( (resolve, reject) => {
     gapi[resource]
       .list()
-      .order(orderBy)
+      .order(...orderBy)
       .page(page, pageSize)
       .query(query)
       .end( (err, res) => {
