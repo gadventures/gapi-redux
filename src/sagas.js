@@ -53,7 +53,7 @@ function _hasNext(res) {
 function *_requestItem(resource, id, conf) {
   /**
    * Makes a request for a single object from gapi.
-   */
+   */ 
   const gapi = new Gapi(conf);
   const promise = new Promise( (resolve, reject) => {
     gapi[resource]
@@ -68,12 +68,13 @@ function *_requestItem(resource, id, conf) {
                       .catch( error   => ({error: error.response}) );
 }
 
-export function *_requestPage(resource, page, query={}, pageSize=20, conf) {
+export function *_requestPage(resource, page, query={}, pageSize=20, orderBy=[], conf) {
   const gapi = new Gapi(conf);
 
   const promise = new Promise( (resolve, reject) => {
     gapi[resource]
       .list()
+      .order(...orderBy)
       .page(page, pageSize)
       .query(query)
       .end( (err, res) => {
@@ -196,7 +197,7 @@ export function* _listResource(conf, action){
   //   return
   // }
 
-  const response = yield *_requestPage(action.resource, action.page, action.query, action.pageSize, conf);
+  const response = yield *_requestPage(action.resource, action.page, action.query, action.pageSize, action.orderBy, conf);
 
   if ( response.error ) {
     // TODO: This is for a single Fail
@@ -228,7 +229,7 @@ export function* _allResource(conf, action){
 
   // while a "next page" exists
   while(true){
-    const response = yield *_requestPage(action.resource, page, action.query, pageSize, conf);
+    const response = yield *_requestPage(action.resource, page, action.query, pageSize, action.orderBy, conf);
 
     if ( response.error ) {
       // TODO: This is for a single Fail
