@@ -133,6 +133,13 @@ The above action will result the following state:
 
 Notice that we only made a request for dossier 10, but `getRelated` is making additional requests to all related resources for the current dossier and after normalizing the data, saves them to the store. Also, since `features` was not included in `getRelated`, it is marked as stub.
 
+For sub-resources nested inside a non-resource object you can pass a string to the actual sub-resource
+
+```javascript
+// getRelated will try to pass through the address and make a separate request for the city (it's `places` resource)
+store.dispatch(getResource('accommodation_dossiers', 10, {'address.city': null}); // `address` is not a resource, but `city` is
+```
+
 * **`force`**`: Boolean [default=false]`
 By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
 

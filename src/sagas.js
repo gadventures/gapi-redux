@@ -3,6 +3,7 @@ import { put, select, call } from 'redux-saga/effects'
 import {normalize, arrayOf} from 'normalizr';
 import Gapi from 'gapi-js';
 import {schemas} from './schemas';
+import _ from 'lodash';
 
 import {
   GET_RESOURCE, LIST_RESOURCE, ALL_RESOURCE,
@@ -23,19 +24,18 @@ import {selectItem} from './selectors';
 // TODO: Error Handling
 // TODO: For loops
 
-export const getActualResourceName = (resourceName, resourceItem, child) => {
+export const getActualResourceName = (resourceName, normalized, subResource) => {
   /**
-   * @param {Object} parent
-   * @param {String} child
-   * Using the schema, returns the actual resource name inside a resource item.
+   * Using the schema, returns the actual resource name inside the normalized entities.
    * e.g.:
-   *   `start_location` in `transport_dossiers.start_location` is actually a `places` resource. So will return "places"
+   *   `start_location` in `transport_dossiers.start_location` is actually a `places` resource.
+   *   So it'll return "places"
    */
   const schema = schemas[resourceName];
-  if( schema.hasOwnProperty(child) && resourceItem.hasOwnProperty(schema[child]._key) ) {
-    return schema[child]._key
-  } else if ( resourceItem.hasOwnProperty(child) ){
-    return child;
+  if( _.has(schema, subResource) && _.has(normalized, _.get(schema, subResource)._key) ) {
+     return _.get(schema, subResource)._key
+  } else if ( normalized.hasOwnProperty(subResource) ){
+    return subResource;
   }
 };
 
@@ -134,11 +134,11 @@ function *_writeSubStubs(parentResource, entities){
 }
 
 function *_getSubResources(resourceName, entities, related){
-  for (const child of Object.keys(related)) {
-    const actualResourceName = getActualResourceName(resourceName, entities, child);
+  for (const subResource of Object.keys(related)) {
+    const actualResourceName = getActualResourceName(resourceName, entities, subResource);
     if (actualResourceName) {
       for (const id of Object.keys(entities[actualResourceName])) {
-        yield put(getResource(actualResourceName, id, related[child]))
+        yield put(getResource(actualResourceName, id, related[subResource]))
       }
     }
   }
