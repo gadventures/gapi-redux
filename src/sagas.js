@@ -264,11 +264,11 @@ export function *_createResource(conf, action) {
   const response = yield promise.then( response => response )
                                 .catch( error => ({error: error.response}) );
   if ( response.error ) {
-    action.reject ? yield call(action.reject, response.error) : null;
+    action.reject ? yield call(action.reject, response.error.body) : null;
     yield put(createResourceFail(action.resource, response.error));
     return;
   }
-  action.resolve ? yield call(action.resolve, response.body): null;
+  action.resolve ? yield call(action.resolve, response): null;
   yield *_writeResponse(response.body, action.resource, response.body.id, {}, 'post', response.status);
   yield put(clearPagination(action.resource));
 }
@@ -286,11 +286,11 @@ export function *_updateResource(conf, action) {
   const response = yield promise.then( response => response )
                                 .catch( error   => ({error: error.response}) );
   if ( response.error ) {
-    action.reject ? yield call(action.reject, response.error) : null;
+    action.reject ? yield call(action.reject, response.error.body) : null;
     yield put(updateResourceFail(action.resource, action.id, response.error));
     return;
   }
-  action.resolve ? yield call(action.resolve, response.status): null;
+  action.resolve ? yield call(action.resolve, response): null;
   yield *_writeResponse(response.body, action.resource, action.id, {}, 'patch', response.status);
 }
 
