@@ -45,6 +45,13 @@ export const selectCurrentPage = (state, resource, paginationKey, raw=false) => 
   return itemList
 };
 
+export const selectAllPages = (state, resource, paginationKey, orderKey=null, raw=false) => {
+  /**
+   * Like `selectALl` will return all loaded resources, but under a certain `paginationKey`
+   */
+  return selectPage(state, resource, paginationKey, 'all', orderKey);
+};
+
 export const selectAll = (state, resource, orderKey=null, filter=null, raw=false) => {
   /**
    * Selects all items currently available in the store
@@ -71,24 +78,6 @@ export const selectAll = (state, resource, orderKey=null, filter=null, raw=false
            : itemList
   } catch (error) {}
   return itemList;
-};
-
-export const selectAllPages = (state, resource, paginationKey, raw=false) => {
-  /**
-   * Like `selectALl` will return all loaded resources, but under a certain `paginationKey`
-   */
-  const data = {};
-  try {
-    const ids = state.pagination[resource][paginationKey].pages.all;
-    ids.map( id => {
-      const item = selectItem(state, 'places', id);
-      if( item )
-        data[id] = item
-    });
-  } catch(error) {}
-
-  return raw ? data : Object.values(data)
-
 };
 
 export const selectPagination = (state, resource, paginationKey) => {
