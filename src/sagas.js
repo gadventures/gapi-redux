@@ -207,7 +207,7 @@ export function* _listResource(conf, action){
 
   // TODO: use normalized data instead
   const normalized = normalize(response.body.results, arrayOf(schemas[action.resource]));
-  const keys = normalized.result.length ? Object.keys(normalized.entities[action.resource]) : [];
+  const keys = normalized.result;
 
   yield put(writePagination(action.resource, action.paginationKey, keys, response.body.count, response.body.current_page, response.body.max_per_page, response.statusCode));
   yield* _writeStubs(action.resource, response.body);
