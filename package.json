@@ -33,7 +33,11 @@
     "clean-webpack-plugin": "^0.1.15",
     "jest-cli": "^20.0.3",
     "regenerator-runtime": "^0.10.5",
-    "webpack": "^1.14.0"
+    "webpack": "1.14.0",
+    "webpack-dev-server": "1.16.4",
+    "webpack-merge": "0.14.1",
+    "webpack-validator": "2.2.9",
+    "html-webpack-plugin": "2.22.0"
   },
   "repository": {
     "type": "git",
