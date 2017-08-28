@@ -1,19 +1,22 @@
-import {Schema, unionOf, arrayOf} from 'normalizr';
+import {schema} from 'normalizr';
 
 
-const place          = new Schema('places'),
-      country        = new Schema('countries'),
-      placeDossier   = new Schema('place_dossiers'),
-      countryDossier = new Schema('country_dossiers'),
+const place = new schema.Entity('places');
+const country = new schema.Entity('countries');
+const placeDossier = new schema.Entity('place_dossiers');
+const countryDossier = new schema.Entity('country_dossiers');
 
-      dossier              = new Schema('dossiers'),
-      accommodationDossier = new Schema('accommodation_dossiers'),
-      activityDossier      = new Schema('activity_dossiers'),
-      transportDossier     = new Schema('transport_dossiers'),
+const dossier = new schema.Entity('dossiers');
+const accommodationDossier = new schema.Entity('accommodation_dossiers');
+const activityDossier = new schema.Entity('activity_dossiers');
+const transportDossier = new schema.Entity('transport_dossiers');
 
-      feature = new Schema('features'),
-      dossierFeature = new Schema('dossier_features'),
-      dossierSegment = new Schema('dossier_segments');
+const feature = new schema.Entity('features');
+const dossierFeature = new schema.Entity('dossier_features');
+const dossierSegment = new schema.Entity('dossier_segments');
+
+const tourCategory = new schema.Entity('tour_categories');
+const reportingOffice = new schema.Entity('reporting_offices');
 
 place.define({
   country: country,
@@ -41,7 +44,9 @@ dossierSegment.define({
 activityDossier.define({
   dossier_segment: dossierSegment,
   start_location: place,
-  end_location: place
+  end_location: place,
+  categories: [ tourCategory ],
+  reporting_offices: [ reportingOffice ],
 });
 
 accommodationDossier.define({
@@ -51,26 +56,27 @@ accommodationDossier.define({
   address: {
     city: place,
     country: country
-  }
+  },
+  reporting_offices: [ reportingOffice ],
 });
 
 transportDossier.define({
-  dossier_segment: dossierSegment
+  dossier_segment: dossierSegment,
+  categories: [ tourCategory ],
+  reporting_offices: [ reportingOffice ],
 });
-
-const dossierMembers = {
-  accommodation_dossiers: accommodationDossier,
-  activity_dossiers: activityDossier,
-  transport_dossiers: transportDossier
-};
 
 dossier.define({
-  /** `unionOf` used for polymorphic objects.
-   *  https://github.com/paularmstrong/normalizr#unionofschemamap-options
-  **/
-  dossier: unionOf(dossierMembers, {schemaAttribute: 'type'})
+  dossier: new schema.Union({
+    accommodation_dossiers: accommodationDossier,
+    activity_dossiers: activityDossier,
+    transport_dossiers: transportDossier
+  }, 'type')
 });
 
+tourCategory.define({
+  category_type: tourCategory
+});
 
 export const schemas = {
   places: place,
@@ -83,5 +89,6 @@ export const schemas = {
   transport_dossiers: transportDossier,
   features: feature,
   dossier_features: dossierFeature,
-  dossier_segments: dossierSegment
+  dossier_segments: dossierSegment,
+  reporting_offices: reportingOffice,
 };
