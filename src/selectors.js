@@ -1,5 +1,5 @@
 import {schemas} from './schemas';
-import {denormalize} from 'denormalizr';
+import {denormalize} from 'normalizr';
 
 export const selectItem = (state, resource, id) => {
   /**
@@ -8,7 +8,7 @@ export const selectItem = (state, resource, id) => {
   let item = null;
   try {
     item = state.resources[resource][id];
-    return denormalize(item, state.resources, schemas[resource]);
+    return denormalize(item, schemas[resource], state.resources);
   } catch (error) {}
   return item;
 };
