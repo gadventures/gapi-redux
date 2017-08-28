@@ -5,9 +5,9 @@
   "main": "build/gapi-redux.js",
   "module": "src/index.js",
   "scripts": {
-    "start": "webpack-dev-server -d --inline --history-api-fallback",
-    "build": "webpack --display-error-details -p --progress --colors",
-    "build:watch": "webpack --display-error-details -p --progress --colors --watch",
+    "start": "webpack-dev-server -d --inline --history-api-fallback --config webpack.development.js",
+    "build": "webpack --display-error-details -p --progress --colors --config webpack.production.js",
+    "build:watch": "webpack --display-error-details -p --progress --colors --watch --config webpack.production.js",
     "prepublish": "npm run build",
     "test": "jest",
     "test:watch": "npm run test -- --watch"
