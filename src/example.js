@@ -1,31 +1,8 @@
-/**
- * Created by smalekpour on 2017-05-23.
- */
 if (! window._babelPolyfill) {
   require("babel-polyfill");
 }
 
-import reducers from './reducers';
-import sagas from './sagas';
 import {
-  getResource,
-  listResource,
-  allResource,
-  updateResource,
-  createResource,
-  deleteResource,
-  clearPagination
-} from './actions';
-import {
-  selectItem,
-  selectPage,
-  selectCurrentPage,
-  selectAllPages,
-  selectPagination,
-  selectAll
-} from './selectors';
-
-export {
   reducers,
   sagas,
   getResource,
@@ -41,10 +18,9 @@ export {
   selectAllPages,
   selectPagination,
   selectAll
-};
+} from './index';
 
-// ----------------------- //
-//*
+
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import { fork } from 'redux-saga/effects';
@@ -61,12 +37,12 @@ const gapiSagas = function* gapiSagas() {
   yield [
     fork(sagas, { key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476', proxy: 'version=alldossiers' })
   ];
-}
+};
 
 sagaMiddleware.run(gapiSagas);
 
 // store.dispatch(getResource('place_dossiers', 666666, {})); // 404
-// store.dispatch(getResource('accommodation_dossiers', 5761, { address: {city: null} } )); // 200
+store.dispatch(getResource('accommodation_dossiers', 5761, { address: {city: null} } )); // 200
 // store.dispatch(getResource('place_dossiers', 666, {place: {country: null}})); // 200
 
 // const handleChanges = () => {
@@ -83,7 +59,7 @@ sagaMiddleware.run(gapiSagas);
 
 // const p = new Promise((resolve, reject) => {
 
-store.dispatch(updateResource('place_dossiers', 666, {place: null}));
+// store.dispatch(updateResource('place_dossiers', 666, {place: null}));
 // store.dispatch(updateResource('place_dossiers', 666, {name: ''}));
 
 // const p = new Promise((resolve, reject) => {
