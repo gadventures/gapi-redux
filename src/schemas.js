@@ -57,6 +57,7 @@ accommodationDossier.define({
     city: place,
     country: country
   },
+  categories: [ tourCategory ],
   reporting_offices: [ reportingOffice ],
 });
 
@@ -91,4 +92,5 @@ export const schemas = {
   dossier_features: dossierFeature,
   dossier_segments: dossierSegment,
   reporting_offices: reportingOffice,
+  tour_categories: tourCategory,
 };
