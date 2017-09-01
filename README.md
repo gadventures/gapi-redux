@@ -93,7 +93,7 @@ No matter how many times or through what action a resource is requested, gapi-re
 Using [normalizer](), all resources will be normalized before saving to the store. 
 
 
-#### `getResource(resourceName, resourceId [, getRelated={} [, force=false]])`
+#### `getResource(resourceName, resourceId, { getRelated={}, force=false })`
 Will attempt to retrieve a single resource from the G API.  
 
 ```javascript
@@ -101,50 +101,38 @@ Will attempt to retrieve a single resource from the G API.
 store.dispatch(getResource('places', 123)) // get place w/ id 123
 
 // Will also make a request for the related country to this resource
-store.dispatch(getResource('places', 123, {country: null }))
+store.dispatch(getResource('places', 123, { getRelated:{country: null } }))
 
 // After requesting the place associated with each place dossier,
 // will then attempt to make a request for each country associated with each place
-store.dispatch(getResource('place_dossiers', 123, {place: {country: null }}))  
+store.dispatch(getResource('place_dossiers', 123, { getRelated:{place: {country: null }} }))  
 ```
 
 ##### Arguments
-* **`resourceName`**`: String [required]`
 
-  The name of the resource to request
+| Parameter | Description |
+| --- | --- |
+| **`resourceName`**`: String [required]` | The name of the resource to request |
+| **`resourceId`**`: Number [required]` | The id of the resource to request |
+| Options`: Object` |   **`getRelated`**`: Object`: By default when requesting a resource, any child resources present will be marked as stubs. `getRelated` is used to make deep requests for those child stubs.  The `getRelated` object can include multiple keys. `getResource` will attempt to request all the given resources after the main resource has been retrieved.  The value of each key can either be `null` or another object containing more resource keys.  See examples section below. |
+|  | **`force`**`: Boolean [default=false]`: By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not. |
 
-* **`resourceId`**`: Number [required]`
 
-  The id of the resource to request
-
-* **`getRelated`**`: Object`
-
-  By default when requesting a resource, any child resources present will be marked as stubs. `getRelated` is used to make deep requests for those child stubs.
-The `getRelated` object can include multiple keys. `getResource` will attempt to request all the given resources after the main resource has been retrieved.
-The value of each key can either be `null` or another object containing more resource keys.
+##### Examples
 
 ```javascript
-store.dispatch(getResource('dossiers', 10, {accommodation_dossiers: {primary_country: null, location: {country: null}}}))               
-```
-
-The above action will result the following state:
-
-![The Store](/docs/media/store.png?raw=true "The Store")
-
-Notice that we only made a request for dossier 10, but `getRelated` is making additional requests to all related resources for the current dossier and after normalizing the data, saves them to the store. Also, since `features` was not included in `getRelated`, it is marked as stub.
-
-For sub-resources nested inside a non-resource object you can pass a string to the actual sub-resource
+store.dispatch(getResource('dossiers', 10, { getRelated:{accommodation_dossiers: {primary_country: null, location: {country: null}}} }))
+``` 
+The above action will result the following state: ![The Store](/docs/media/store.png?raw=true "The Store") Notice that we only made a request for dossier 10, but `getRelated` is making additional requests to all related resources for the current dossier and after normalizing the data, saves them to the store. Also, since `features` was not included in `getRelated`, it is marked as stub. For sub-resources nested inside a non-resource object you can pass a string to the actual sub-resource
 
 ```javascript
 // getRelated will try to pass through the address and make a separate request for the city (it's `places` resource)
 store.dispatch(getResource('accommodation_dossiers', 10, {'address.city': null}); // `address` is not a resource, but `city` is
-```
-
-* **`force`**`: Boolean [default=false]`
-By default gapi-redux will deny requesting a resource that has already been loaded to the store. Passing `true` will force `getResource` to make a request whether it exists or not.  
+``` 
+ 
 
 
-#### `listResource(resource, paginationKey [, page=1 [, query={} [, getRelated={} [, pageSize=20]]]])`
+#### `listResource(resource, paginationKey, { page=1, query={}, getRelated={}, pageSize=20 })`
 
 Will retrieve one page of the resource and save it in the store under the given paginationKey.
 
@@ -153,53 +141,32 @@ Will retrieve one page of the resource and save it in the store under the given 
 store.dispatch(listResource('countries', 'myCountries')) 
 
 // After retrieving the list of places, will request each place's related country and save it in the store. 
-store.dispatch(listResource('places', 'listOfPlaces'), 1, {}, {country: null})
+store.dispatch(listResource('places', 'listOfPlaces'), { page:1, query:{}, getRelated:{country: null} })
 ```
 ##### Arguments
-* **`resource`**`: String [required]`
 
-  The name of the resource to request
-
-* **`paginationKey`**` : String [required]`
-
-  A resource should be allowed to have multiple paginations. Lets say you have a form field component with search and filtering capabilities. One form might decide to use that component for more than one of it's fields. The search results (pagination) for each component, shouldn't affect the results in the other filed component. More importantly, neither should affect the list view page for that resource.
-  Passing a `paginationKey` will allow the same resource to have multiple paginations.
-
-* **`page`**` : Number [default=1]`
-
-  Page number to request
-
-* **`query`**` : Object`
-
-  Any query to pass to the G API
-
-* **`getRelated`**` : Object`
-
-  Request related resources for each item in the list after the retrieving the main resource 
+| Parameter | Description |
+| --- | --- |
+| **`resource`**`: String [required]` | The name of the resource to request |
+| **`paginationKey`**` : String [required]` | A resource should be allowed to have multiple paginations. Lets say you have a form field component with search and filtering capabilities. One form might decide to use that component for more than one of it's fields. The search results (pagination) for each component, shouldn't affect the results in the other filed component. More importantly, neither should affect the list view page for that resource.  Passing a `paginationKey` will allow the same resource to have multiple paginations. |
+| Options`: Object` | **`page`**` : Number [default=1]`: Page number to request |
+| | **`query`**` : Object`: Any query to pass to the G API |
+| | **`getRelated`**` : Object`: Request related resources for each item in the list after the retrieving the main resource | 
 
 
-#### `allResource(resource, query={}, getRelated={}, getStubs=true)`
+#### `allResource(resource, { query:{}, getRelated:{}, getStubs:true })`
 
 Request every item in a resource. `allResource` will make separate calls to each page of a resource. Depending on the resource, this can sometimes take long time to complete. Use with caution.  
 
 ##### Arguments
-* **`resource`**` : String [required]`
+| Parameter | Description |
+| --- | --- |
+| **`resource`**` : String [required]` | The name of the resource |
+| Options`: Object` | **`query`**` : Object`: Any query to pass to the G API |
+| | **`getRelated`**`: Object`: Request related resources for each item in the list after the retrieving the main resource |
+| | **`getStubs`**`: Boolean [default=true]`: In most cases when using `allResource`, collecting only the stubs would suffice. Passing `false` can help speedup the request process.   This value is `true` by default. |
 
-  The name of the resource
-
-* **`query`**` : Object`
-
-  Any query to pass to the G API
-
-* **`getRelated`**`: Object`
-
-  Request related resources for each item in the list after the retrieving the main resource
-
-* **`getStubs`**`: Boolean [default=true]`
-
-  In most cases when using `allResource`, collecting only the stubs would suffice. Passing `false` can help speedup the request process.   This value is `true` by default.
-
-#### `createResource(resource, [data={}, [resolve, [reject]]])`
+#### `createResource(resource, { data={}, resolve, reject })`
 Creates a single resource.
 
 You can wrap `createResource` in a promise. It'll call `resolve` and `reject` accordingly
@@ -213,7 +180,7 @@ const p = new Promise( (resolve, reject) => {
 )
 ```
 
-#### `updateResource(resource, id, [data={}, [resolve, [reject]]])`
+#### `updateResource(resource, id, { data={}, resolve, reject })`
 
 Updates a single resource.
 
@@ -225,13 +192,10 @@ Clears the pagination data from the store of a given resource.
 
 #### Arguments
 
-* **`resource`**` : String [required]`
-
-  The name of the resource
-
-* **`paginationKey`**` : String`
-
-  Will only clear pagination data under a given `paginationKey`. 
+| Parameter | Description |
+| --- | --- |
+| **`resource`**` : String [required]` | The name of the resource |
+| **`paginationKey`**` : String` | Will only clear pagination data under a given `paginationKey`. | 
 
 
 #### Data Availability
@@ -249,12 +213,12 @@ This allows for gradually displaying results, to the user, as they load. While t
    1. Make a request for the list endpoint of a resource. The returned result will hold pagination information along with a list of stubs.
    2. Write the pagination information
    3. Write the list of stubs to the store in one go.
-   4. Dispatch `getResource()` for each stub in the list. Repeat all steps of `getRealted` for each resource.
+   4. Dispatch `getResource()` for each stub in the list. Repeat all steps of `getRelated` for each resource.
 
 ##### `allResource()`
    1. Make a request for the first page of a resource. The page size is set to 50.
    2. Write stubs to the store in one go.
-   3. Dispatch `getRelated()` for each stub in the list. Repeat all steps of `getRealted` for each resource.
+   3. Dispatch `getRelated()` for each stub in the list. Repeat all steps of `getRelated` for each resource.
    5. Make a request for the next page if available.
 
 

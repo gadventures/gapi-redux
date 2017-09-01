@@ -24,20 +24,24 @@ import {
 
 } from './actionTypes';
 
+//////////////////////////////////////////////
+////////////// Action Creators ///////////////
+//////////////////////////////////////////////
 
-export const getResource = (resource, id, getRelated={}, force=false) => (
-  {type: GET_RESOURCE, resource, id, getRelated, force}
+
+export const getResource = (resource, id, {getRelated={}, force=false}={}) => (
+  { type: GET_RESOURCE, resource, id, getRelated, force }
 );
 export const getResourceFail = (resource, id, error) => (
   {type: GET_RESOURCE_FAIL, resource, id, error}
 );
 
-export const allResource = (resource, query={}, getRelated={}, getStubs=true, orderBy) => (
-  {type: ALL_RESOURCE, resource, getRelated, getStubs, orderBy}
+export const allResource = (resource, {query={}, getRelated={}, getStubs=true, orderBy}={}) => (
+  { type: ALL_RESOURCE, resource, query, getRelated, getStubs, orderBy }
 );
 
-export const listResource = (resource, paginationKey, page=1, query={}, getRelated={}, pageSize=20, orderBy) => (
-  {type: LIST_RESOURCE, resource, paginationKey, page, query, getRelated, pageSize, orderBy}
+export const listResource = (resource, paginationKey, {page=1, query={}, getRelated={}, pageSize=20, orderBy}={}) => (
+  { type: LIST_RESOURCE, resource, paginationKey, page, query, getRelated, pageSize, orderBy }
 );
 export const listResourceFail = (resource, paginationKey, id, error) => (
   {type: LIST_RESOURCE_FAIL, resource, paginationKey, id, error}
@@ -57,16 +61,16 @@ export const changePage = (resource, paginationKey, page) => (
   {type: CHANGE_PAGE, resource, paginationKey, page}
 );
 
-export const updateResource = (resource, id, data={}, resolve, reject) => (
-  {type: UPDATE_RESOURCE, resource, id, data, resolve, reject}
+export const updateResource = (resource, id, {data={}, resolve, reject}={}) => (
+  { type: UPDATE_RESOURCE, resource, id, data, resolve, reject }
 );
 export const updateResourceFail = (resource, id, error) => (
   {type: UPDATE_RESOURCE_FAIL, resource, id, error}
 );
 
 // TODO: Get rid of tempId requirement. this is stupid.
-export const createResource = (resource, data={}, resolve, reject) => (
-  {type: CREATE_RESOURCE, resource, data, resolve, reject}
+export const createResource = (resource, {data={}, resolve, reject}={}) => (
+  { type: CREATE_RESOURCE, resource, data, resolve, reject }
 );
 export const createResourceFail = (resource, tempId, error) => (
   {type: CREATE_RESOURCE_FAIL, resource, tempId, error}
@@ -76,6 +80,6 @@ export const deleteResource = (resource, id) => (
   {type: DELETE_RESOURCE, resource, id}
 );
 
-export const writeResource = (resource, id, response, requestType, responseCode) => (
-  {type: WRITE_RESOURCE, resource, id, response, requestType, responseCode}
+export const writeResource = (resource, id, data, requestType, responseCode) => (
+  {type: WRITE_RESOURCE, resource, id, data, requestType, responseCode}
 );
