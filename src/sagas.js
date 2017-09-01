@@ -1,6 +1,6 @@
 import {takeEvery} from 'redux-saga';
 import { put, select, call } from 'redux-saga/effects'
-import {normalize, arrayOf} from 'normalizr';
+import { normalize } from 'normalizr';
 import Gapi from 'gapi-js';
 import {schemas} from './schemas';
 import _ from 'lodash';
@@ -206,7 +206,7 @@ export function* _listResource(conf, action){
   }
 
   // TODO: use normalized data instead
-  const normalized = normalize(response.body.results, arrayOf(schemas[action.resource]));
+  const normalized = normalize(response.body.results, [schemas[action.resource]]);
   const keys = normalized.result;
 
   yield put(writePagination(action.resource, action.paginationKey, keys, response.body.count, response.body.current_page, response.body.max_per_page, response.statusCode));
