@@ -42,7 +42,8 @@ const gapiSagas = function* gapiSagas() {
 sagaMiddleware.run(gapiSagas);
 
 // store.dispatch(getResource('place_dossiers', 666666, {})); // 404
-store.dispatch(getResource('accommodation_dossiers', 5761, { address: {city: null} } )); // 200
+// store.dispatch(getResource('images', 3041 )); // 200
+store.dispatch(listResource('images', 'all_images' )); // 200
 // store.dispatch(getResource('place_dossiers', 666, {place: {country: null}})); // 200
 
 // const handleChanges = () => {

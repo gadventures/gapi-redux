@@ -18,6 +18,9 @@ const dossierSegment = new schema.Entity('dossier_segments');
 const tourCategory = new schema.Entity('tour_categories');
 const reportingOffice = new schema.Entity('reporting_offices');
 
+const image = new schema.Entity('images');
+const video = new schema.Entity('videos');
+
 place.define({
   country: country,
   feature: feature
@@ -93,4 +96,6 @@ export const schemas = {
   dossier_segments: dossierSegment,
   reporting_offices: reportingOffice,
   tour_categories: tourCategory,
+  images: image,
+  videos: video,
 };
