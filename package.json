@@ -1,6 +1,6 @@
 {
   "name": "gapi-redux",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "A redux client for G Adventures' API",
   "main": "build/gapi-redux.js",
   "module": "src/index.js",
