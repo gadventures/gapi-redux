@@ -101,7 +101,7 @@ const resourceReducer = function( oldState={}, action ){
         [action.resource]: {           // e.g. state.resources.countries
           ...state[action.resource],
           [action.id]: {               // e.g. state.resources.countries.data.CA
-            ...action.response,
+            ...action.data,
             stub: false,
             fetching: false
           }

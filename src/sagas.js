@@ -127,7 +127,7 @@ function *_writeSubStubs(parentResource, entities){
     for ( const id of Object.keys(entities[entity])){
       const resourceItem = yield select(selectItem, entity, id);
       if( ! resourceItem ) {
-        yield put(writeStub(entity, id, entity[id]))
+        yield put(writeStub(entity, id, entities[entity][id]))
       }
     }
   }
