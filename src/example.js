@@ -41,10 +41,25 @@ const gapiSagas = function* gapiSagas() {
 
 sagaMiddleware.run(gapiSagas);
 
-// store.dispatch(getResource('place_dossiers', 666666, {})); // 404
+const relatedDossiers = {
+  accommodation_dossiers:
+    { dossier_segment: null, primary_country: null, location: { country: null } },
+  activity_dossiers: {
+    dossier_segment: null,
+    start_location:  { country: null },
+    end_location:    { country: null },
+  },
+  transport_dossiers: { dossier_segment: null },
+};
+
+// store.dispatch(listResource('dossiers', 'all_dossiers')); // 404
 // store.dispatch(getResource('images', 3041 )); // 200
-store.dispatch(listResource('images', 'all_images' )); // 200
-// store.dispatch(getResource('place_dossiers', 666, {place: {country: null}})); // 200
+// store.dispatch(listResource('images', 'all_images' )); // 200
+store.dispatch(listResource('dossiers', 'all_dossiers', {
+  getRelated: relatedDossiers,
+  orderBy: ['-date_last_modified'],
+})); // 200
+// store.dispatch(listResource('country_dossiers', 'allCountries', {getRelated: {country: null}})); // 200
 
 // const handleChanges = () => {
 //   const state = store.getState();
