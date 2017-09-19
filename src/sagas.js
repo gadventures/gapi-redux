@@ -31,10 +31,10 @@ export const getActualResourceName = (resourceName, normalized, subResource) => 
    *   `start_location` in `transport_dossiers.start_location` is actually a `places` resource.
    *   So it'll return "places"
    */
-  const schema = schemas[resourceName];
+  const schema = schemas[resourceName].schema;
   if( _.has(schema, subResource) && _.has(normalized, _.get(schema, subResource)._key) ) {
      return _.get(schema, subResource)._key
-  } else if ( normalized.hasOwnProperty(subResource) ){
+  } else if ( _.has(normalized, subResource) ){
     return subResource;
   }
 };
@@ -103,7 +103,7 @@ export function *_writeStubs(resource, response) {
   }
 }
 
-export function *_writeResources(resource, response, related) {
+export function *_writeResources(resource, response, getRelated) {
   /**
    * Read the actual resource only if it's a stub and write to the store.
    */
@@ -113,7 +113,7 @@ export function *_writeResources(resource, response, related) {
     const resourceItem = yield select(selectItem, resource, results[i].id);
 
     if( resourceItem && resourceItem.stub ) {
-      yield put(getResource(resource, results[i].id, related))
+      yield put(getResource(resource, results[i].id, { getRelated }))
     }
   }
 }
@@ -138,7 +138,7 @@ function *_getSubResources(resourceName, entities, related){
     const actualResourceName = getActualResourceName(resourceName, entities, subResource);
     if (actualResourceName) {
       for (const id of Object.keys(entities[actualResourceName])) {
-        yield put(getResource(actualResourceName, id, related[subResource]))
+        yield put(getResource(actualResourceName, id, { getRelated: related[subResource] }))
       }
     }
   }

@@ -68,7 +68,6 @@ export const updateResourceFail = (resource, id, error) => (
   {type: UPDATE_RESOURCE_FAIL, resource, id, error}
 );
 
-// TODO: Get rid of tempId requirement. this is stupid.
 export const createResource = (resource, {data={}, resolve, reject}={}) => (
   { type: CREATE_RESOURCE, resource, data, resolve, reject }
 );
