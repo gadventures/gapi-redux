@@ -33,7 +33,9 @@ countryDossier.define({
 
 placeDossier.define({
   place: place,
-  segment: dossierSegment
+  segment: dossierSegment,
+  images: [image],
+  videos: [video],
 });
 
 dossierFeature.define({
@@ -50,6 +52,8 @@ activityDossier.define({
   end_location: place,
   categories: [ tourCategory ],
   reporting_offices: [ reportingOffice ],
+  images: [image],
+  videos: [video],
 });
 
 accommodationDossier.define({
@@ -62,12 +66,16 @@ accommodationDossier.define({
   },
   categories: [ tourCategory ],
   reporting_offices: [ reportingOffice ],
+  images: [image],
+  videos: [video],
 });
 
 transportDossier.define({
   dossier_segment: dossierSegment,
   categories: [ tourCategory ],
   reporting_offices: [ reportingOffice ],
+  images: [image],
+  videos: [video],
 });
 
 dossier.define({
