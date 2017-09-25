@@ -35,7 +35,7 @@ const store = createStore(
 
 const gapiSagas = function* gapiSagas() {
   yield [
-    fork(sagas, { key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476', proxy: 'version=alldossiers' })
+    fork(sagas, { key: 'xxx', proxy: 'version=alldossiers' }) // provide actual key
   ];
 };
 
