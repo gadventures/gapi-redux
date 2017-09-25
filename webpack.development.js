@@ -53,7 +53,7 @@ const CONFIG = {
         conf: {
           api: {
             url: 'https://rest.gadventures.com',
-            key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476'
+            key: 'xxx'
           }
         }
       })
