@@ -7,22 +7,43 @@ import _ from 'lodash';
 
 import {
   GET_RESOURCE, LIST_RESOURCE, ALL_RESOURCE,
+  GET_GRAPHQL,
   UPDATE_RESOURCE, CREATE_RESOURCE,
   DELETE_RESOURCE
 } from './actionTypes';
 
 import {
   getResource, getResourceFail,
+  getGraphQLFail, writeGraphQL,
   listResourceFail,
   updateResourceFail, createResourceFail,
   writePagination, writeStub, writeResource,
-  clearPagination
+  clearPagination, graphQL
 } from './actions';
 
 import {selectItem} from './selectors';
 
 // TODO: Error Handling
 // TODO: For loops
+
+
+const imageQuery = `query query($id: ID!) {
+  image(id: $id){
+    id
+    file {
+      url
+    }
+    variations {
+      image {
+        modification
+        file {
+          url
+        }
+      }
+      href
+    }
+  }
+}`;
 
 export const getActualResourceName = (resourceName, normalized, subResource) => {
   /**
@@ -137,8 +158,17 @@ function *_getSubResources(resourceName, entities, related){
   for (const subResource of Object.keys(related)) {
     const actualResourceName = getActualResourceName(resourceName, entities, subResource);
     if (actualResourceName) {
-      for (const id of Object.keys(entities[actualResourceName])) {
-        yield put(getResource(actualResourceName, id, { getRelated: related[subResource] }))
+
+      if( actualResourceName === 'images' ){
+        // TODO: Remove hack.
+        // Temporary Hack: Image variations can only be retrieved through graphQL.
+        for (const id of Object.keys(entities[actualResourceName])) {
+          yield put(graphQL('images', imageQuery, {"id": id}))
+        }
+      } else {
+        for (const id of Object.keys(entities[actualResourceName])) {
+          yield put(getResource(actualResourceName, id, {getRelated: related[subResource]}))
+        }
       }
     }
   }
@@ -251,6 +281,41 @@ export function* _allResource(conf, action){
   }
 }
 
+export function *_graphQLRequest(query, variables, conf){
+  const gapi = new Gapi(conf);
+  return yield new Promise( (resolve, reject) => {
+    gapi.graphQL(query, variables)
+        .end( (err, res) => {
+          err ? reject(err) : resolve(res);
+        });
+  });
+}
+
+export function *_graphQL(conf, action){
+  const response = yield _graphQLRequest(action.query, action.variables, conf);
+
+  if ( response.body.errors ) {
+    yield put(getGraphQLFail(action.resource, action.id, response.body.errors));
+    return;
+  }
+  yield _writeGraphQL(response.body.data, action.resource, action.id, response.status);
+}
+
+function *_writeGraphQL(response, resource, id, responseCode){
+  /**
+   * Write the resource sub resource's response to the store
+   * Also, if other resources listed in `getRelated` make a request for those
+   */
+  console.log(response)
+  console.log(resource)
+  console.log(id)
+  console.log(responseCode)
+  console.log('----------------------')
+  const normalized = normalize(response, schemas[resource]);
+  yield put(writeGraphQL(resource, id, normalized.entities[resource][id], requestType, responseCode));
+  yield *_writeSubStubs(resource, normalized.entities);
+}
+
 export function *_createResource(conf, action) {
   const gapi = new Gapi(conf);
 
@@ -320,6 +385,7 @@ export default function* (conf) {
     takeEvery( GET_RESOURCE,    _getResource,    conf ),
     takeEvery( LIST_RESOURCE,   _listResource,   conf ),
     takeEvery( ALL_RESOURCE,    _allResource,    conf ),
+    takeEvery( GET_GRAPHQL,     _graphQL,        conf ),
     takeEvery( UPDATE_RESOURCE, _updateResource, conf ),
     takeEvery( CREATE_RESOURCE, _createResource, conf ),
     takeEvery( DELETE_RESOURCE, _deleteResource, conf )

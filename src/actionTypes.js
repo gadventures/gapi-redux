@@ -5,6 +5,10 @@ export const LIST_RESOURCE         = 'gapi/LIST';
 export const ALL_RESOURCE          = 'gapi/ALL';
 export const LIST_RESOURCE_FAIL    = 'gapi/LIST_FAIL';
 
+export const GET_GRAPHQL           = 'gapi/GET_GRAPHQL';
+export const GET_GRAPHQL_FAIL      = 'gapi/GET_GRAPHQL_FAIL';
+export const WRITE_GRAPHQL         = 'gapi/WRITE_GRAPHQL';
+
 export const WRITE_PAGINATION      = 'gapi/WRITE_PAGINATION';
 export const WRITE_STUB            = 'gapi/WRITE_STUB';
 export const WRITE_RESOURCE        = 'gapi/WRITE_RESOURCE';

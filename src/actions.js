@@ -6,6 +6,10 @@ import {
   ALL_RESOURCE,
   LIST_RESOURCE_FAIL,
 
+  GET_GRAPHQL,
+  GET_GRAPHQL_FAIL,
+  WRITE_GRAPHQL,
+
   WRITE_PAGINATION,
   WRITE_STUB,
   WRITE_RESOURCE,
@@ -45,6 +49,18 @@ export const listResource = (resource, paginationKey, {page=1, query={}, getRela
 );
 export const listResourceFail = (resource, paginationKey, id, error) => (
   {type: LIST_RESOURCE_FAIL, resource, paginationKey, id, error}
+);
+
+export const getGraphQL = (resource, query, variables) => (
+  { type: GET_GRAPHQL, resource, query, variables }
+);
+
+export const getGraphQLFail= (resource, errors) => (
+  { type: GET_GRAPHQL_FAIL, resource, errors }
+);
+
+export const writeGraphQL = (resource, id, data, requestType, responseCode) => (
+  {type: WRITE_RESOURCE, resource, id, data, requestType, responseCode}
 );
 
 export const writePagination = (resource, paginationKey, ids, count, page, pageSize, responseCode) => (
