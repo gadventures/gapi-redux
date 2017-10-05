@@ -107,3 +107,21 @@ export const schemas = {
   images: image,
   videos: video,
 };
+
+export const SINGULAR_RESOURCE = {
+  places: 'place',
+  countries: 'country',
+  place_dossiers: 'placeDossier',
+  country_dossiers: 'countryDossier',
+  dossiers: 'dossier',
+  accommodation_dossiers: 'accommodationDossier',
+  activity_dossiers: 'activityDossier',
+  transport_dossiers: 'transportDossier',
+  features: 'feature',
+  dossier_features: 'dossierFeature',
+  dossier_segments: 'dossierSegment',
+  reporting_offices: 'reportingOffice',
+  tour_categories: 'tourCategory',
+  images: 'image',
+  videos: 'video'
+};

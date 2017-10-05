@@ -35,30 +35,49 @@ const store = createStore(
 
 const gapiSagas = function* gapiSagas() {
   yield [
-    fork(sagas, { key: 'xxx', proxy: 'version=alldossiers' }) // provide actual key
+    fork(sagas, { key: 'test_29fb8348e8990800ad76e692feb0c8cce47f9476', proxy: 'version=alldossiers' }) // provide actual key
   ];
 };
 
 sagaMiddleware.run(gapiSagas);
 
-const relatedDossiers = {
-  accommodation_dossiers:
-    { dossier_segment: null, primary_country: null, location: { country: null } },
-  activity_dossiers: {
-    dossier_segment: null,
-    start_location:  { country: null },
-    end_location:    { country: null },
-  },
-  transport_dossiers: { dossier_segment: null },
-};
+// const relatedDossiers = {
+//   accommodation_dossiers:
+//     { dossier_segment: null, primary_country: null, location: { country: null } },
+//   activity_dossiers: {
+//     dossier_segment: null,
+//     start_location:  { country: null },
+//     end_location:    { country: null },
+//   },
+//   transport_dossiers: { dossier_segment: null },
+// };
+
+const query = `{
+  id,
+    variations {
+      image {
+        modification
+        file {
+          url
+        }
+      }
+      href
+    }
+  }
+}
+`;
+//
+// `query query($id: ID!) { image(id: $id){  id,  variations {    image {      modification      file {        url      }    }    href  }}}`
 
 // store.dispatch(listResource('dossiers', 'all_dossiers')); // 404
-// store.dispatch(getResource('images', 3041 )); // 200
+store.dispatch(getResource('images', 3041, { gqlQuery: query } )); // 200
+// store.dispatch(getResource('activity_dossiers', 6962, {getRelated: {images: null}} )); // 200
+// store.dispatch(getResource('activity_dossiers', 3093, {getRelated: {images: null}} )); // 200
 // store.dispatch(listResource('images', 'all_images' )); // 200
-store.dispatch(listResource('dossiers', 'all_dossiers', {
-  getRelated: relatedDossiers,
-  orderBy: ['-date_last_modified'],
-})); // 200
+// store.dispatch(listResource('dossiers', 'all_dossiers', {
+//   getRelated: relatedDossiers,
+//   orderBy: ['-date_last_modified'],
+// })); // 200
 // store.dispatch(listResource('country_dossiers', 'allCountries', {getRelated: {country: null}})); // 200
 
 // const handleChanges = () => {

@@ -2,7 +2,7 @@ import {takeEvery} from 'redux-saga';
 import { put, select, call } from 'redux-saga/effects'
 import { normalize } from 'normalizr';
 import Gapi from 'gapi-js';
-import {schemas} from './schemas';
+import {schemas, SINGULAR_RESOURCE} from './schemas';
 import _ from 'lodash';
 
 import {
@@ -23,6 +23,25 @@ import {selectItem} from './selectors';
 
 // TODO: Error Handling
 // TODO: For loops
+
+// TODO: Temporary
+const imagesGraphQLQueryss = `{
+  id,
+  file{
+    url
+  }
+  variations {
+    image {
+      modification
+      file {
+        url
+      }
+    }
+    href
+  }
+}`;
+
+const imagesGraphQLQuery = `{ id, file{ url } variations { image { modification file { url } } href } } `;
 
 export const getActualResourceName = (resourceName, normalized, subResource) => {
   /**
@@ -58,6 +77,23 @@ function *_requestItem(resource, id, conf) {
   const promise = new Promise( (resolve, reject) => {
     gapi[resource]
       .get(id)
+      .end( (err, res) => {
+        err
+          ? reject(err)
+          : resolve(res);
+      });
+  });
+  return yield promise.then( response => response )
+                      .catch( error   => ({error: error.response}) );
+}
+
+function *_requestItemGraphQL(query, variables, conf) {
+  /**
+   * Makes a request for a single object from gapi.
+   */
+  const gapi = new Gapi(conf);
+  const promise = new Promise( (resolve, reject) => {
+    gapi.graphQL(query, variables)
       .end( (err, res) => {
         err
           ? reject(err)
@@ -137,8 +173,15 @@ function *_getSubResources(resourceName, entities, related){
   for (const subResource of Object.keys(related)) {
     const actualResourceName = getActualResourceName(resourceName, entities, subResource);
     if (actualResourceName) {
-      for (const id of Object.keys(entities[actualResourceName])) {
-        yield put(getResource(actualResourceName, id, { getRelated: related[subResource] }))
+
+      if(actualResourceName==='images'){
+        for (const id of Object.keys(entities[actualResourceName])) {
+          yield put(getResource(actualResourceName, id, {gqlQuery: imagesGraphQLQuery}))
+        }
+      } else {
+        for (const id of Object.keys(entities[actualResourceName])) {
+          yield put(getResource(actualResourceName, id, {getRelated: related[subResource]}))
+        }
       }
     }
   }
@@ -158,6 +201,17 @@ function *_writeResponse(response, resource, id, getRelated={}, requestType, res
   }
 }
 
+const buildSingleItemQuery = (resource, query) => {
+  const singularResource = SINGULAR_RESOURCE[resource];
+  const header = `query query($id: ID!) { ${singularResource}(id: $id)`;
+  const footer = `}`;
+
+  console.log(query)
+  console.log('**********************')
+
+  return `${header}${query}${footer}`;
+};
+
 //////////////////////////////////////////////
 ////////////// Action Handelers //////////////
 //////////////////////////////////////////////
@@ -168,19 +222,35 @@ export function* _getResource(conf, action) {
    * a stub. To retrieve the actual child resource the resource names must be passed in `action.getRelated`
    */
 
-  if( ! action.force) {
+  if (!action.force) {
     const item = yield select(selectItem, action.resource, action.id);
-    if( item && item.hasOwnProperty('stub') && !item.stub)
+    if (item && item.hasOwnProperty('stub') && !item.stub)
       return;
   }
 
-  const response  = yield *_requestItem(action.resource, action.id, conf);
+  if (action.gqlQuery) {
+    // GraphQL request
+    const query = buildSingleItemQuery(action.resource, action.gqlQuery);
+    const variables = {id: action.id};
+    const response = yield* _requestItemGraphQL(query, variables, conf);
 
-  if ( response.error ) {
-    yield put(getResourceFail(action.resource, action.id, response.error));
-    return;
+    if ( response.errors ) {
+      yield put(getResourceFail(action.resource, action.id, response.errors));
+      return;
+    }
+    yield _writeResponse(response.body.data[SINGULAR_RESOURCE[action.resource]], action.resource, action.id, response.status);
+
+  } else {
+    // REST request
+    const response = yield* _requestItem(action.resource, action.id, conf);
+
+    if ( response.error ) {
+      yield put(getResourceFail(action.resource, action.id, response.error));
+      return;
+    }
+    yield _writeResponse(response.body, action.resource, action.id, action.getRelated, 'get', response.status);
   }
-  yield _writeResponse(response.body, action.resource, action.id, action.getRelated, 'get', response.status);
+
 }
 
 export function* _listResource(conf, action){
