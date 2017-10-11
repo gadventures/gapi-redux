@@ -1,109 +1,100 @@
 import {schema} from 'normalizr';
 
+const countries = new schema.Entity('countries');
+const features = new schema.Entity('features');
 
-const place = new schema.Entity('places');
-const country = new schema.Entity('countries');
-const placeDossier = new schema.Entity('place_dossiers');
-const countryDossier = new schema.Entity('country_dossiers');
+const dossier_features = new schema.Entity('dossier_features');
+const dossier_segments = new schema.Entity('dossier_segments');
 
-const dossier = new schema.Entity('dossiers');
-const accommodationDossier = new schema.Entity('accommodation_dossiers');
-const activityDossier = new schema.Entity('activity_dossiers');
-const transportDossier = new schema.Entity('transport_dossiers');
+const reporting_offices = new schema.Entity('reporting_offices');
+const tour_categories = new schema.Entity('tour_categories');
 
-const feature = new schema.Entity('features');
-const dossierFeature = new schema.Entity('dossier_features');
-const dossierSegment = new schema.Entity('dossier_segments');
+const images = new schema.Entity('images');
+const videos = new schema.Entity('videos');
 
-const tourCategory = new schema.Entity('tour_categories');
-const reportingOffice = new schema.Entity('reporting_offices');
-
-const image = new schema.Entity('images');
-const video = new schema.Entity('videos');
-
-place.define({
-  country: country,
-  feature: feature
+const country_dossiers = new schema.Entity('country_dossiers', {
+  country: countries,
+  segment: dossier_segments,
 });
 
-countryDossier.define({
-  country: country,
-  segment: dossierSegment
+const places = new schema.Entity('places', {
+  country: countries,
+  feature: features,
 });
 
-placeDossier.define({
-  place: place,
-  segment: dossierSegment,
-  images: [image],
-  videos: [video],
+const place_dossiers = new schema.Entity('place_dossiers', {
+  place: places,
+  segment: dossier_segments,
+  images: [ images ],
+  videos: [ videos ],
 });
 
-dossierFeature.define({
-  parent: dossierFeature
-});
-
-dossierSegment.define({
-  parent: dossierSegment
-});
-
-activityDossier.define({
-  dossier_segment: dossierSegment,
-  start_location: place,
-  end_location: place,
-  categories: [ tourCategory ],
-  reporting_offices: [ reportingOffice ],
-  images: [image],
-  videos: [video],
-});
-
-accommodationDossier.define({
-  dossier_segment: dossierSegment,
-  primary_country: country,
-  location: place,
+const accommodation_dossiers = new schema.Entity('accommodation_dossiers', {
+  dossier_segment: dossier_segments,
+  primary_country: countries,
+  location: places,
   address: {
-    city: place,
-    country: country
+    city: places,
+    country: countries
   },
-  categories: [ tourCategory ],
-  reporting_offices: [ reportingOffice ],
-  images: [image],
-  videos: [video],
+  categories: [ tour_categories ],
+  reporting_offices: [ reporting_offices ],
+  images: [ images ],
+  videos: [ videos ],
 });
 
-transportDossier.define({
-  dossier_segment: dossierSegment,
-  categories: [ tourCategory ],
-  reporting_offices: [ reportingOffice ],
-  images: [image],
-  videos: [video],
+const activity_dossiers = new schema.Entity('activity_dossiers', {
+  dossier_segment: dossier_segments,
+  start_location: places,
+  end_location: places,
+  categories: [ tour_categories ],
+  reporting_offices: [ reporting_offices ],
+  images: [ images ],
+  videos: [ videos ],
+});
+const transport_dossiers = new schema.Entity('transport_dossiers', {
+  dossier_segment: dossier_segments,
+  categories: [ tour_categories ],
+  reporting_offices: [ reporting_offices ],
+  images: [ images ],
+  videos: [ videos ],
 });
 
-dossier.define({
+const dossiers = new schema.Entity('dossiers', {
   dossier: new schema.Union({
-    accommodation_dossiers: accommodationDossier,
-    activity_dossiers: activityDossier,
-    transport_dossiers: transportDossier
+    accommodation_dossiers: accommodation_dossiers,
+    activity_dossiers: activity_dossiers,
+    transport_dossiers: transport_dossiers
   }, 'type')
 });
 
-tourCategory.define({
-  category_type: tourCategory
+
+dossier_features.define({
+  parent: dossier_features
+});
+
+dossier_segments.define({
+  parent: dossier_segments
+});
+
+tour_categories.define({
+  category_type: tour_categories
 });
 
 export const schemas = {
-  places: place,
-  countries: country,
-  place_dossiers: placeDossier,
-  country_dossiers: countryDossier,
-  dossiers: dossier,
-  accommodation_dossiers: accommodationDossier,
-  activity_dossiers: activityDossier,
-  transport_dossiers: transportDossier,
-  features: feature,
-  dossier_features: dossierFeature,
-  dossier_segments: dossierSegment,
-  reporting_offices: reportingOffice,
-  tour_categories: tourCategory,
-  images: image,
-  videos: video,
+  places,
+  countries,
+  place_dossiers,
+  country_dossiers,
+  dossiers,
+  accommodation_dossiers,
+  activity_dossiers,
+  transport_dossiers,
+  features,
+  dossier_features,
+  dossier_segments,
+  reporting_offices,
+  tour_categories,
+  images,
+  videos,
 };
