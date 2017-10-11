@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
 
   GET_RESOURCE, GET_RESOURCE_FAIL,
@@ -23,9 +24,9 @@ const addResourceToState = (state, resource, id) => {
    * Make sure the store has an entry for this resource.
    * e.g. data for `countries` would be stored under `state.resources.countries`
    */
-  if ( !state.hasOwnProperty(resource) )
+  if ( !_.has(state, resource) )
     state[resource] = {};
-  if (!state[resource].hasOwnProperty(id) && state[resource][id])
+  if (!_.has(state[resource], id) && state[resource][id])
     state[resource][id] = {};
   return state
 };
@@ -34,10 +35,15 @@ const addPaginationKeyToState = (state, resource, paginationKey, force=false) =>
   /**
    * Make sure the store stores pagination information for this resource/paginationKey
    */
-  if ( force || !state.hasOwnProperty(resource) || !state[resource].hasOwnProperty(paginationKey) )
+  if ( !_.has(state, resource) ){
+    state[resource] = {}
+  }
+  if( !_.has(state[resource], paginationKey) ){
     state[resource] = {
-      [paginationKey]: defaultPaginationState
-    };
+      ...state[resource],
+      [paginationKey]: defaultPaginationState,
+    }
+  }
   return state
 };
 
