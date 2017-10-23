@@ -88,32 +88,33 @@ export function *_requestPage(resource, page, query={}, pageSize=20, orderBy=[],
                       .catch( error   => ({error: error.response}) );
 }
 
-export function *_writeStubs(resource, response) {
+export function *_writeStubs(normalized) {
   /**
    * Writes the stubs to the store
    */
-  const { results } = response;
-
-  for(let i=0; i<results.length; i++) {
-    const resourceItem = yield select(selectItem, resource, results[i].id);
-
-    if( ! resourceItem ) {
-      yield put(writeStub(resource, results[i].id, results[i]))
+  const {entities} = normalized;
+  for(let resource in entities) {
+    for(let id in entities[resource]) {
+      const value = entities[resource][id];
+      const resourceItem = yield select(selectItem, resource, id);
+      if( ! resourceItem ) {
+        yield put(writeStub(resource, id, value))
+      }
     }
   }
 }
 
-export function *_writeResources(resource, response, getRelated) {
+export function *_writeResources(normalized, getRelated) {
   /**
    * Read the actual resource only if it's a stub and write to the store.
    */
-  const { results } = response;
-
-  for(let i=0; i<results.length; i++) {
-    const resourceItem = yield select(selectItem, resource, results[i].id);
-
-    if( resourceItem && resourceItem.stub ) {
-      yield put(getResource(resource, results[i].id, { getRelated }))
+  const {entities} = normalized;
+  for(let resource in entities) {
+    for (let id in entities[resource]) {
+      const resourceItem = yield select(selectItem, resource, id);
+      if( resourceItem && resourceItem.stub ) {
+        yield put(getResource(resource, id, { getRelated }))
+      }
     }
   }
 }
@@ -210,8 +211,8 @@ export function* _listResource(conf, action){
   const keys = normalized.result;
 
   yield put(writePagination(action.resource, action.paginationKey, keys, response.body.count, response.body.current_page, response.body.max_per_page, response.statusCode));
-  yield* _writeStubs(action.resource, response.body);
-  yield* _writeResources(action.resource, response.body, action.getRelated);
+  yield* _writeStubs(normalized);
+  yield* _writeResources(normalized, action.getRelated);
 }
 
 export function* _allResource(conf, action){
@@ -237,12 +238,11 @@ export function* _allResource(conf, action){
       break;
     }
 
-    // TODO: use normalized data instead
-    // const normalized = normalize(response.body.results, arrayOf(schemas[action.resource]));
-    yield* _writeStubs(action.resource, response.body);
+    const normalized = normalize(response.body.results, [schemas[action.resource]]);
+    yield* _writeStubs(normalized);
 
     if( action.getStubs )
-      yield* _writeResources(action.resource, response.body, action.getRelated);
+      yield* _writeResources(normalized, action.getRelated);
 
     if ( _hasNext(response.body ))
       page++;

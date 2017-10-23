@@ -60,13 +60,11 @@ const transport_dossiers = new schema.Entity('transport_dossiers', {
   videos: [ videos ],
 });
 
-const dossiers = new schema.Entity('dossiers', {
-  dossier: new schema.Union({
-    accommodation_dossiers: accommodation_dossiers,
-    activity_dossiers: activity_dossiers,
-    transport_dossiers: transport_dossiers
-  }, 'type')
-});
+const dossiers = new schema.Union({
+  accommodation_dossiers: accommodation_dossiers,
+  activity_dossiers: activity_dossiers,
+  transport_dossiers: transport_dossiers
+}, 'type');
 
 
 dossier_features.define({
