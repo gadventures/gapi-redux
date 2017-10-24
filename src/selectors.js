@@ -20,9 +20,15 @@ export const selectPage = (state, resource, paginationKey, page) => {
   **/
   const itemList = [];
   try {
-    state.pagination[resource][paginationKey].pages[page].map( id => {
-      if( state.resources[resource][id]) {
-        itemList.push(selectItem(state, resource, id))
+    state.pagination[resource][paginationKey].pages[page].map( obj => {
+      let id = obj;
+      let actualResource = resource;
+      if( typeof obj === 'object') {
+        id = obj.id;
+        actualResource = obj.schema;
+      }
+      if( _.has(state.resources, `${actualResource}.${id}`) ) {
+        itemList.push(selectItem(state, actualResource, id))
       }
     })
   } catch (error) {}
