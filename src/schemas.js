@@ -52,6 +52,7 @@ const activity_dossiers = new schema.Entity('activity_dossiers', {
   images: [ images ],
   videos: [ videos ],
 });
+
 const transport_dossiers = new schema.Entity('transport_dossiers', {
   dossier_segment: dossier_segments,
   categories: [ tour_categories ],
@@ -60,11 +61,17 @@ const transport_dossiers = new schema.Entity('transport_dossiers', {
   videos: [ videos ],
 });
 
+const transport_leg_dossiers = new schema.Entity('transport_leg_dossiers', {
+  transport: transport_dossiers,
+  start_location: places,
+  end_location: places,
+});
+
 const dossiers = new schema.Entity('dossiers', {
   dossier: new schema.Union({
     accommodation_dossiers: accommodation_dossiers,
     activity_dossiers: activity_dossiers,
-    transport_dossiers: transport_dossiers
+    transport_leg_dossiers: transport_leg_dossiers
   }, 'type')
 });
 
@@ -90,6 +97,7 @@ export const schemas = {
   accommodation_dossiers,
   activity_dossiers,
   transport_dossiers,
+  transport_leg_dossiers,
   features,
   dossier_features,
   dossier_segments,
