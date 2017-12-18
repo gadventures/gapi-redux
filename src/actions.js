@@ -36,12 +36,12 @@ export const getResourceFail = (resource, id, error) => (
   {type: GET_RESOURCE_FAIL, resource, id, error}
 );
 
-export const allResource = (resource, {query={}, getRelated={}, getStubs=true, orderBy}={}) => (
-  { type: ALL_RESOURCE, resource, query, getRelated, getStubs, orderBy }
+export const allResource = (resource, {query={}, getRelated={}, orderBy, getStubs=true}={}) => (
+  { type: ALL_RESOURCE, resource, query, getRelated, orderBy, getStubs }
 );
 
-export const listResource = (resource, paginationKey, {page=1, query={}, getRelated={}, pageSize=20, orderBy}={}) => (
-  { type: LIST_RESOURCE, resource, paginationKey, page, query, getRelated, pageSize, orderBy }
+export const listResource = (resource, paginationKey, {page=1, query={}, getRelated={}, pageSize=20, orderBy, getStubs=true}={}) => (
+  { type: LIST_RESOURCE, resource, paginationKey, page, query, getRelated, pageSize, orderBy, getStubs }
 );
 export const listResourceFail = (resource, paginationKey, id, error) => (
   {type: LIST_RESOURCE_FAIL, resource, paginationKey, id, error}

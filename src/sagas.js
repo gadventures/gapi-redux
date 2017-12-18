@@ -104,7 +104,7 @@ export function *_writeStubs(normalized) {
   }
 }
 
-export function *_writeResources(normalized, getRelated) {
+export function *_hydrateStubs(normalized, getRelated) {
   /**
    * Read the actual resource only if it's a stub and write to the store.
    */
@@ -212,7 +212,9 @@ export function* _listResource(conf, action){
 
   yield put(writePagination(action.resource, action.paginationKey, keys, response.body.count, response.body.current_page, response.body.max_per_page, response.statusCode));
   yield* _writeStubs(normalized);
-  yield* _writeResources(normalized, action.getRelated);
+
+  if( action.getStubs )
+    yield* _hydrateStubs(normalized, action.getRelated);
 }
 
 export function* _allResource(conf, action){
@@ -225,7 +227,7 @@ export function* _allResource(conf, action){
    * Looks pretty much like _listResource except for the loop and the fact that
    * it will not write pagination to the store.
   **/
-  const pageSize = 50;
+  const pageSize = 100;
   let page = 1;
 
   // while a "next page" exists
@@ -242,12 +244,12 @@ export function* _allResource(conf, action){
     yield* _writeStubs(normalized);
 
     if( action.getStubs )
-      yield* _writeResources(normalized, action.getRelated);
+      yield* _hydrateStubs(normalized, action.getRelated);
 
-    if ( _hasNext(response.body ))
-      page++;
-    else
+    if ( !_hasNext(response.body ))
       break;
+
+    page++;
   }
 }
 
