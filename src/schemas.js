@@ -12,6 +12,22 @@ const tour_categories = new schema.Entity('tour_categories');
 const images = new schema.Entity('images');
 const videos = new schema.Entity('videos');
 
+const accommodation_costs = new schema.Entity('accommodation_costs');
+const band_costs = new schema.Entity('band_costs');
+const fixed_costs = new schema.Entity('fixed_costs');
+const multishare_costs = new schema.Entity('multishare_costs');
+const per_person_costs = new schema.Entity('per_person_costs');
+const per_person_variable_costs = new schema.Entity('per_person_variable_costs');
+
+const costs = new schema.Union({
+  accommodation_costs: accommodation_costs,
+  band_costs: band_costs,
+  fixed_costs: fixed_costs,
+  multishare_costs: multishare_costs,
+  per_person_costs: per_person_costs,
+  per_person_variable_costs: per_person_variable_costs
+}, 'type');
+
 const country_dossiers = new schema.Entity('country_dossiers', {
   country: countries,
   segment: dossier_segments,
@@ -41,6 +57,7 @@ const accommodation_dossiers = new schema.Entity('accommodation_dossiers', {
   reporting_offices: [ reporting_offices ],
   images: [ images ],
   videos: [ videos ],
+  costs: [ costs ],
 });
 
 const activity_dossiers = new schema.Entity('activity_dossiers', {
@@ -51,6 +68,7 @@ const activity_dossiers = new schema.Entity('activity_dossiers', {
   reporting_offices: [ reporting_offices ],
   images: [ images ],
   videos: [ videos ],
+  costs: [ costs ],
 });
 
 const transport_dossiers = new schema.Entity('transport_dossiers', {
@@ -65,6 +83,7 @@ const transport_leg_dossiers = new schema.Entity('transport_leg_dossiers', {
   transport: transport_dossiers,
   start_location: places,
   end_location: places,
+  costs: [ costs ],
 });
 
 const dossiers = new schema.Entity('dossiers', {
@@ -105,4 +124,10 @@ export const schemas = {
   tour_categories,
   images,
   videos,
+  accommodation_costs,
+  band_costs,
+  fixed_costs,
+  multishare_costs,
+  per_person_costs,
+  per_person_variable_costs,
 };
