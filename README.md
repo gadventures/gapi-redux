@@ -127,7 +127,7 @@ The above action will result the following state: ![The Store](/docs/media/store
 
 ```javascript
 // getRelated will try to pass through the address and make a separate request for the city (it's `places` resource)
-store.dispatch(getResource('accommodation_dossiers', 10, {'address.city': null}); // `address` is not a resource, but `city` is
+store.dispatch(getResource('accommodation_dossiers', 10, { getRelated: {'address.city': null} }); // `address` is not a resource, but `city` is
 ``` 
  
 
