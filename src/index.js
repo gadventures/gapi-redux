@@ -3,7 +3,8 @@ if (! window._babelPolyfill) {
 }
 
 import reducers from './reducers';
-import sagas from './sagas';
+import sagas, {sagaGenerator} from './sagas';
+import {schemas} from './schemas';
 import {
   getResource,
   listResource,
@@ -13,18 +14,22 @@ import {
   deleteResource,
   clearPagination
 } from './actions';
-import {
+import selectors, {selectorGenerator} from './selectors';
+
+const {
   selectItem,
   selectPage,
   selectCurrentPage,
   selectAllPages,
   selectPagination,
   selectAll
-} from './selectors';
+} = selectors;
 
 export {
   reducers,
   sagas,
+  schemas,
+  sagaGenerator,
   getResource,
   listResource,
   allResource,
@@ -32,6 +37,7 @@ export {
   createResource,
   deleteResource,
   clearPagination,
+  selectorGenerator,
   selectItem,
   selectPage,
   selectCurrentPage,

@@ -23,7 +23,7 @@ const CONFIG = {
       'gapi-redux': ['babel-polyfill', PATHS.main]
     },
     cache: true,
-    plugins : [ new HtmlWebpackPlugin ({ title : 'Temp' }) ]
+    plugins : [ new HtmlWebpackPlugin ({ title : 'Gapi Redux Example' }) ]
   },
 
   getOutput: {
