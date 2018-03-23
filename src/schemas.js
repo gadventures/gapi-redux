@@ -6,7 +6,6 @@ const features = new schema.Entity('features');
 const dossier_features = new schema.Entity('dossier_features');
 const dossier_segments = new schema.Entity('dossier_segments');
 
-const reporting_offices = new schema.Entity('reporting_offices');
 const tour_categories = new schema.Entity('tour_categories');
 
 const images = new schema.Entity('images');
@@ -38,7 +37,6 @@ const accommodation_dossiers = new schema.Entity('accommodation_dossiers', {
     country: countries
   },
   categories: [ tour_categories ],
-  reporting_offices: [ reporting_offices ],
   images: [ images ],
   videos: [ videos ],
 });
@@ -48,7 +46,6 @@ const activity_dossiers = new schema.Entity('activity_dossiers', {
   start_location: places,
   end_location: places,
   categories: [ tour_categories ],
-  reporting_offices: [ reporting_offices ],
   images: [ images ],
   videos: [ videos ],
 });
@@ -56,7 +53,6 @@ const activity_dossiers = new schema.Entity('activity_dossiers', {
 const transport_dossiers = new schema.Entity('transport_dossiers', {
   dossier_segment: dossier_segments,
   categories: [ tour_categories ],
-  reporting_offices: [ reporting_offices ],
   images: [ images ],
   videos: [ videos ],
 });
@@ -101,7 +97,6 @@ export const schemas = {
   features,
   dossier_features,
   dossier_segments,
-  reporting_offices,
   tour_categories,
   images,
   videos,
